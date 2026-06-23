@@ -23,8 +23,6 @@ WP Guard is a full-stack WordPress security audit platform:
 - **PDF export** in **English** and **Persian** — with or without the AI report
 - Scan history stored in SQLite
 
-This public release intentionally **does not** include password guessing or credential brute-force features.
-
 ---
 
 ## Installation
@@ -161,7 +159,7 @@ The scanner runs in **10 phases**:
 3. Version detection  
 4. User enumeration  
 5. Site intelligence (sitemap, contacts, OSINT)  
-6. Auth surface detection (wp-admin / XML-RPC exposure — **no password testing**)  
+6. Auth surface detection (wp-admin / XML-RPC exposure)  
 7. Search injection probes (SQLi / XSS)  
 8. Misconfiguration + sensitive file discovery  
 9. Plugin/theme discovery + vulnerability lookup  
@@ -300,11 +298,6 @@ pip install -r requirements.txt
 cp .env.example .env
 python app.py
 ```
-
-### نکات نسخه عمومی
-
-- بروت‌فورس و حدس رمز عبور **حذف شده**  
-- فقط سایت‌هایی را اسکن کنید که **مجوز تست** دارید  
 
 ---
 
