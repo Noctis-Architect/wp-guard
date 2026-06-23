@@ -9,6 +9,8 @@
 
 > **Authorized testing only.** Scan sites you own or have explicit written permission to test. WP Guard is built for security audits, hardening, and permitted penetration testing — not for unauthorized attacks.
 
+> Unauthorized scanning of third-party websites may violate computer misuse laws. By using WP Guard you agree to test only systems you own or are explicitly authorized to assess.
+
 **Repository:** [github.com/Noctis-Architect/wp-guard](https://github.com/Noctis-Architect/wp-guard)
 
 ---
@@ -23,6 +25,8 @@ WP Guard is a full-stack WordPress security audit platform:
 - **PDF export** in **English** and **Persian** — with or without the AI report
 - Scan history stored in SQLite
 
+**Use only on sites you own or have written permission to test.** The dashboard, PDF reports, and scan logs repeat this requirement.
+
 ---
 
 ## Installation
@@ -34,6 +38,8 @@ Download the latest portable build from [GitHub Releases](https://github.com/Noc
 **[Download WPGuard-Windows-x64.zip](https://github.com/Noctis-Architect/wp-guard/releases/latest/download/WPGuard-Windows-x64.zip)**
 
 #### Steps
+
+> **Before scanning:** confirm you own the target site or have explicit written authorization. WP Guard is not for probing strangers' websites.
 
 1. Download and extract `WPGuard-Windows-x64.zip` to a folder (e.g. `C:\WPGuard`)
 2. Open the extracted folder — you should see:
@@ -64,6 +70,8 @@ Download the latest portable build from [GitHub Releases](https://github.com/Noc
 Best for a VPS or dedicated Linux host.
 
 **Requirements:** Debian/Ubuntu or RHEL/CentOS, `sudo` access, Python 3.10+
+
+> Deploy only for auditing sites you own or are contracted to test. Do not expose a public scanner for unauthorized use.
 
 ```bash
 git clone https://github.com/Noctis-Architect/wp-guard.git
@@ -249,9 +257,11 @@ The workflow uploads `WPGuard-Windows-x64.zip` to [Releases](https://github.com/
 
 ## Ethics & responsible use
 
-- Only scan systems you **own** or are **authorized** to test.  
-- Injection and dynamic probes may appear in target server logs — use reasonable rate limits.  
-- Do not commit `.env` or API keys.  
+**WP Guard must only be used on systems you own or are explicitly authorized to test** (written permission from the site owner is strongly recommended).
+
+- Unauthorized scanning may be illegal in your jurisdiction — you are solely responsible for how you use this tool.
+- Injection and dynamic probes may appear in target server logs — use reasonable rate limits.
+- Do not commit `.env` or API keys.
 - Do not use this tool for unauthorized access, spam, or abuse.
 
 ---
@@ -265,6 +275,8 @@ Issues and pull requests are welcome on [GitHub](https://github.com/Noctis-Archi
 ## فارسی
 
 **WP Guard** اسکنر امنیتی وردپرس با داشبورد زنده، CVE، تحلیل AI و **خروجی PDF فارسی/انگلیسی** است.
+
+> **فقط استفاده مجاز.** فقط سایت‌هایی را اسکن کنید که **مالک آن هستید** یا **مجوز کتبی تست** دارید. اسکن بدون اجازه ممکن است غیرقانونی باشد.
 
 **مخزن:** [github.com/Noctis-Architect/wp-guard](https://github.com/Noctis-Architect/wp-guard)
 
@@ -303,5 +315,5 @@ python app.py
 
 <p align="center">
   <strong>WP Guard</strong> — WordPress security, scanned deep. Analyzed smart.<br/>
-  <sub>Flask · Socket.IO · AI · PDF</sub>
+  <sub>Authorized testing only · Flask · Socket.IO · AI · PDF</sub>
 </p>

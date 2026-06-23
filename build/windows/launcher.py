@@ -59,6 +59,7 @@ def main() -> None:
         threading.Thread(target=_open_browser, args=(port,), daemon=True).start()
 
     print(f"WP Guard running at http://127.0.0.1:{port}/")
+    print("Authorized use only — scan sites you own or have written permission to test.")
     print("Press Ctrl+C to stop.")
     socketio.run(
         app,

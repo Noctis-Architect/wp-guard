@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WP Guard | Advanced Security Scanner</title>
+    <meta name="description" content="WP Guard — authorized WordPress security auditing only. Scan sites you own or have permission to test.">
+    <title>WP Guard | Authorized Security Scanner</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
@@ -370,6 +371,35 @@
             height: 0.5rem;
             border-radius: 2px;
         }
+
+        .auth-notice-bar {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+            padding: 0.7rem 1rem;
+            border-radius: 0.75rem;
+            background: rgba(245, 158, 11, 0.07);
+            border: 1px solid rgba(245, 158, 11, 0.22);
+            color: #fde68a;
+            font-size: 0.78rem;
+            line-height: 1.5;
+        }
+        .auth-notice-bar i {
+            color: #fbbf24;
+            margin-top: 0.15rem;
+            flex-shrink: 0;
+        }
+        .auth-notice-inline {
+            padding: 0.75rem 0.9rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.55);
+            border: 1px solid rgba(245, 158, 11, 0.18);
+            cursor: pointer;
+        }
+        .auth-notice-inline input {
+            margin-top: 0.2rem;
+            accent-color: #f59e0b;
+        }
     </style>
 </head>
 <body class="p-4 md:p-8">
@@ -392,6 +422,15 @@
             </div>
         </nav>
 
+        <div class="auth-notice-bar mb-8" role="note" aria-label="Authorized use notice">
+            <i class="fas fa-scale-balanced" aria-hidden="true"></i>
+            <p>
+                <strong class="text-amber-200">Authorized use only.</strong>
+                Scan only websites you <strong>own</strong> or have <strong>explicit written permission</strong> to test.
+                Unauthorized scanning may be illegal.
+            </p>
+        </div>
+
         <!-- Main Scanner Section -->
         <section id="scan-section">
             <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
@@ -406,7 +445,11 @@
                                 <input type="text" id="targetUrl" placeholder="https://example.com" 
                                     class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition">
                             </div>
-                            <button onclick="startAudit()" id="scanBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold transition flex items-center justify-center gap-3">
+                            <label for="authConfirm" class="auth-notice-inline flex items-start gap-3 text-xs text-slate-400 leading-relaxed">
+                                <input type="checkbox" id="authConfirm" checked class="mt-0.5 shrink-0">
+                                <span>I confirm I own this site or have explicit written authorization to test it.</span>
+                            </label>
+                            <button onclick="startAudit()" id="scanBtn" class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-40 disabled:cursor-not-allowed py-4 rounded-xl font-bold transition flex items-center justify-center gap-3">
                                 <i class="fas fa-bolt"></i> Run Audit
                             </button>
                         </div>
@@ -436,6 +479,7 @@
                         </div>
                         <h3 class="text-2xl font-bold mb-2 text-slate-300">No Active Audit</h3>
                         <p class="text-slate-500 max-w-sm">Enter a WordPress site URL to begin deep scanning for vulnerabilities and logical flaws.</p>
+                        <p class="text-amber-400/80 text-xs mt-4 max-w-md">Only scan sites you own or are authorized to test.</p>
                     </div>
 
                     <div id="results-dashboard" class="hidden space-y-5 animate-in fade-in duration-500">
@@ -860,7 +904,8 @@
         <!-- History Section -->
         <section id="history-section" class="hidden">
             <div class="glass-panel rounded-3xl p-8">
-                <h2 class="text-2xl font-bold mb-8">Scan History</h2>
+                <h2 class="text-2xl font-bold mb-2">Scan History</h2>
+                <p class="text-xs text-amber-400/70 mb-8">Re-run audits only on sites you own or are authorized to test.</p>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left">
                         <thead>
@@ -877,6 +922,14 @@
                 </div>
             </div>
         </section>
+
+        <footer class="mt-16 pt-6 border-t border-slate-800/80 text-center space-y-1.5">
+            <p class="text-xs text-amber-400/75">
+                <i class="fas fa-shield-halved mr-1 opacity-70"></i>
+                Authorized use only — scan sites you own or have explicit written permission to test.
+            </p>
+            <p class="text-[10px] text-slate-600">WP Guard · Security auditing &amp; hardening tool</p>
+        </footer>
     </div>
 
     <script>
@@ -975,7 +1028,8 @@
         function setScanning(state) {
             isScanning = state;
             const btn = document.getElementById('scanBtn');
-            btn.disabled = state;
+            const authConfirm = document.getElementById('authConfirm');
+            btn.disabled = state || !authConfirm?.checked;
             btn.innerHTML = state
                 ? '<i class="fas fa-spinner fa-spin"></i> Auditing...'
                 : '<i class="fas fa-bolt"></i> Run Audit';
@@ -998,6 +1052,13 @@
 
         function startAudit() {
             if (isScanning) return;
+            const authConfirm = document.getElementById('authConfirm');
+            if (!authConfirm?.checked) {
+                authConfirm?.focus();
+                authConfirm?.closest('label')?.classList.add('ring-1', 'ring-amber-500/50');
+                setTimeout(() => authConfirm?.closest('label')?.classList.remove('ring-1', 'ring-amber-500/50'), 2000);
+                return;
+            }
             const url = document.getElementById('targetUrl').value.trim();
             if (!url) { document.getElementById('targetUrl').focus(); return; }
 
@@ -1034,6 +1095,14 @@
         }
 
         document.addEventListener('DOMContentLoaded', () => {
+            const authConfirm = document.getElementById('authConfirm');
+            const scanBtn = document.getElementById('scanBtn');
+            const syncAuthGate = () => {
+                if (scanBtn && authConfirm) scanBtn.disabled = !authConfirm.checked;
+            };
+            authConfirm?.addEventListener('change', syncAuthGate);
+            syncAuthGate();
+
             document.getElementById('targetUrl').addEventListener('keydown', (e) => {
                 if (e.key === 'Enter') startAudit();
             });

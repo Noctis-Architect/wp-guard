@@ -501,6 +501,11 @@ def run_scan(sid, target_url):
         if settings.get("proxy", {}).get("enabled") and proxies:
             log_progress({"message": f"Routing traffic through proxy: {proxies['http']}", "type": "info"})
 
+        log_progress({
+            "message": "Authorized use only — scan targets you own or have explicit written permission to test.",
+            "type": "warning",
+        })
+
         scanner = WordPressScanner(
             target_url,
             log_callback=log_progress,
@@ -561,4 +566,5 @@ def handle_scan(data):
 
 
 if __name__ == "__main__":
+    print("Authorized use only — scan sites you own or have written permission to test.")
     socketio.run(app, host="0.0.0.0", port=5000, debug=True)

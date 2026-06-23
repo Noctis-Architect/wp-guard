@@ -152,3 +152,4 @@ fi
 
 echo -e "${GREEN}Installation complete!${NC}"
 echo -e "You can access the app at: http://your-ip:$PORT"
+echo -e "${YELLOW}Reminder: scan only sites you own or are explicitly authorized to test.${NC}"
