@@ -1,0 +1,2595 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WP Guard | Advanced Security Scanner</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Outfit:wght@300;400;600;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@400;600;700&display=swap');
+        
+        :root {
+            --bg-dark: #0f172a;
+            --card-dark: #1e293b;
+            --accent: #3b82f6;
+            --accent-glow: rgba(59, 130, 246, 0.5);
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-dark);
+            color: #f1f5f9;
+        }
+
+        .mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .cyber-card {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .cyber-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px -10px var(--accent-glow);
+            border-color: var(--accent);
+        }
+
+        .log-container {
+            height: 300px;
+            overflow-y: auto;
+            background: #020617;
+            border: 1px solid #334155;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 #020617;
+        }
+
+        .log-entry { border-left: 3px solid transparent; }
+        .log-info { border-left-color: #3b82f6; color: #94a3b8; }
+        .log-success { border-left-color: #22c55e; color: #4ade80; }
+        .log-warning { border-left-color: #eab308; color: #fbbf24; }
+        .log-error { border-left-color: #ef4444; color: #f87171; }
+
+        .toggle-switch {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            flex-shrink: 0;
+        }
+        .toggle-switch input { opacity: 0; width: 0; height: 0; }
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            inset: 0;
+            background: #334155;
+            border-radius: 24px;
+            transition: 0.3s;
+        }
+        .toggle-slider::before {
+            content: "";
+            position: absolute;
+            height: 18px;
+            width: 18px;
+            left: 3px;
+            bottom: 3px;
+            background: white;
+            border-radius: 50%;
+            transition: 0.3s;
+        }
+        .toggle-switch input:checked + .toggle-slider { background: #3b82f6; }
+        .toggle-switch input:checked + .toggle-slider::before { transform: translateX(20px); }
+
+        .ai-analysis-content h2 { font-size: 1.1rem; font-weight: 700; margin: 1rem 0 0.5rem; color: #e2e8f0; font-family: 'Vazirmatn', 'Tahoma', 'Outfit', sans-serif; }
+        .ai-analysis-content h3 { font-size: 0.95rem; font-weight: 600; margin: 0.75rem 0 0.4rem; color: #cbd5e1; font-family: 'Vazirmatn', 'Tahoma', 'Outfit', sans-serif; }
+        .ai-analysis-content p { margin: 0.4rem 0; color: #94a3b8; font-size: 0.85rem; line-height: 1.8; font-family: 'Vazirmatn', 'Tahoma', 'Outfit', sans-serif; }
+        .ai-analysis-content ul, .ai-analysis-content ol { margin: 0.4rem 0 0.4rem 1.2rem; color: #94a3b8; font-size: 0.85rem; font-family: 'Vazirmatn', 'Tahoma', 'Outfit', sans-serif; }
+        .ai-analysis-content code { background: #0f172a; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.8rem; }
+        .ai-analysis-content pre { background: #0f172a; padding: 0.75rem; border-radius: 8px; overflow-x: auto; margin: 0.5rem 0; }
+        .ai-analysis-content pre code { background: none; padding: 0; }
+        .ai-analysis-content[dir="rtl"] { direction: rtl; text-align: right; }
+        .ai-analysis-content[dir="rtl"] ul,
+        .ai-analysis-content[dir="rtl"] ol { margin: 0.4rem 1.2rem 0.4rem 0; }
+        .ai-thinking-preview[dir="rtl"],
+        .ai-stream-preview[dir="rtl"] { direction: rtl; text-align: right; }
+
+        .ai-thinking-box {
+            background: rgba(15, 23, 42, 0.8);
+            border: 1px solid rgba(34, 211, 238, 0.25);
+            border-radius: 12px;
+            padding: 0.75rem 1rem;
+            margin-bottom: 1rem;
+        }
+        .ai-thinking-header {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #22d3ee;
+            margin-bottom: 0.5rem;
+        }
+        .ai-thinking-dots span {
+            animation: ai-dot-bounce 1.4s infinite ease-in-out both;
+            display: inline-block;
+            width: 5px;
+            height: 5px;
+            margin: 0 2px;
+            border-radius: 50%;
+            background: #22d3ee;
+        }
+        .ai-thinking-dots span:nth-child(1) { animation-delay: -0.32s; }
+        .ai-thinking-dots span:nth-child(2) { animation-delay: -0.16s; }
+        @keyframes ai-dot-bounce {
+            0%, 80%, 100% { transform: scale(0.6); opacity: 0.4; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+        .ai-thinking-preview {
+            max-height: 120px;
+            overflow-y: auto;
+            font-size: 0.75rem;
+            line-height: 1.5;
+            color: #64748b;
+            white-space: pre-wrap;
+            word-break: break-word;
+        }
+        .ai-thinking-timer {
+            font-size: 0.7rem;
+            color: #475569;
+            margin-top: 0.5rem;
+        }
+        .ai-stream-preview {
+            margin-top: 0.75rem;
+            padding: 0.75rem;
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            max-height: min(55vh, 520px);
+            overflow-y: auto;
+            font-size: 0.8rem;
+            line-height: 1.6;
+            color: #cbd5e1;
+            word-break: break-word;
+        }
+        .ai-stream-preview h2, .ai-stream-preview h3 { font-weight: 700; margin: 0.6rem 0 0.35rem; color: #e2e8f0; }
+        .ai-stream-preview h2 { font-size: 0.95rem; }
+        .ai-stream-preview h3 { font-size: 0.85rem; color: #94a3b8; }
+        .ai-stream-preview ul { margin: 0.35rem 0 0.35rem 1.1rem; }
+        .ai-stream-preview code { background: #1e293b; padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.75rem; }
+        .ai-stream-cursor {
+            display: inline-block;
+            color: #22d3ee;
+            animation: ai-cursor-blink 1s step-end infinite;
+            margin-left: 1px;
+        }
+        @keyframes ai-cursor-blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+        
+        .pulse { animation: pulse-animation 2s infinite; }
+        @keyframes pulse-animation {
+            0% { box-shadow: 0 0 0 0px var(--accent-glow); }
+            100% { box-shadow: 0 0 0 15px rgba(59, 130, 246, 0); }
+        }
+
+        .results-scroll {
+            max-height: 420px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+        .stack-scroll {
+            max-height: 220px;
+            overflow-y: auto;
+            scrollbar-width: thin;
+            scrollbar-color: #334155 transparent;
+        }
+
+        .stack-section {
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
+        }
+        .stack-section:last-child {
+            padding-bottom: 0;
+            border-bottom: none;
+        }
+        .stack-section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 0.625rem;
+        }
+        .stack-section-title {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+        .stack-section-count {
+            font-size: 0.625rem;
+            font-weight: 700;
+            color: #475569;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.125rem 0.5rem;
+            border-radius: 9999px;
+        }
+        .stack-empty {
+            font-size: 0.75rem;
+            color: #475569;
+            font-style: italic;
+            padding: 0.5rem 0;
+        }
+
+        .sec-header-grid {
+            display: grid;
+            gap: 0.5rem;
+        }
+        .sec-header-row {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0.625rem 0.75rem;
+            border-radius: 0.75rem;
+            background: rgba(15, 23, 42, 0.45);
+            border: 1px solid rgba(51, 65, 85, 0.45);
+            font-size: 0.75rem;
+        }
+        .sec-header-row.good { border-color: rgba(34, 197, 94, 0.25); }
+        .sec-header-row.weak { border-color: rgba(245, 158, 11, 0.25); }
+        .sec-header-row.missing { border-color: rgba(239, 68, 68, 0.25); }
+        .sec-header-name {
+            font-weight: 700;
+            color: #cbd5e1;
+            min-width: 0;
+        }
+        .sec-header-note {
+            color: #64748b;
+            margin-top: 0.15rem;
+            line-height: 1.35;
+        }
+        .sec-header-score {
+            flex-shrink: 0;
+            font-weight: 700;
+            font-size: 0.65rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 9999px;
+            background: rgba(51, 65, 85, 0.6);
+            color: #94a3b8;
+        }
+        .sec-grade-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 2rem;
+            height: 2rem;
+            border-radius: 0.5rem;
+            font-weight: 800;
+            font-size: 0.875rem;
+        }
+        .sec-grade-a { background: rgba(34, 197, 94, 0.15); color: #4ade80; border: 1px solid rgba(34, 197, 94, 0.3); }
+        .sec-grade-b { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+        .sec-grade-c { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+        .sec-grade-d, .sec-grade-f { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        .result-tab {
+            padding: 0.5rem 1rem;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: #64748b;
+            border-bottom: 2px solid transparent;
+            transition: color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .result-tab:hover { color: #94a3b8; }
+        .result-tab.active {
+            color: #3b82f6;
+            border-bottom-color: #3b82f6;
+        }
+        .result-tab .tab-count {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 1.25rem;
+            height: 1.25rem;
+            padding: 0 0.35rem;
+            margin-left: 0.35rem;
+            border-radius: 9999px;
+            font-size: 0.65rem;
+            background: rgba(51, 65, 85, 0.8);
+            color: #94a3b8;
+        }
+        .result-tab.active .tab-count {
+            background: rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .result-panel { display: none; }
+        .result-panel.active { display: block; }
+
+        .vuln-item summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        .vuln-item summary::-webkit-details-marker { display: none; }
+        .vuln-item[open] summary .vuln-chevron { transform: rotate(90deg); }
+        .vuln-chevron { transition: transform 0.2s; }
+
+        .intel-section summary {
+            list-style: none;
+            cursor: pointer;
+        }
+        .intel-section summary::-webkit-details-marker { display: none; }
+        .intel-section[open] .intel-chevron { transform: rotate(90deg); }
+        .intel-chevron { transition: transform 0.2s; }
+
+        .chip-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.375rem;
+        }
+        .chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            padding: 0.25rem 0.625rem;
+            border-radius: 0.5rem;
+            font-size: 0.6875rem;
+            font-family: 'JetBrains Mono', monospace;
+            border: 1px solid transparent;
+        }
+
+        .sev-legend {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 0.5rem;
+        }
+        .sev-legend-item {
+            display: flex;
+            align-items: center;
+            gap: 0.35rem;
+            font-size: 0.65rem;
+            color: #64748b;
+            font-weight: 600;
+        }
+        .sev-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="p-4 md:p-8">
+    <div class="max-w-7xl mx-auto">
+        <!-- Sidebar/Nav -->
+        <nav class="flex justify-between items-center mb-12">
+            <div class="flex items-center space-y-1">
+                <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center mr-4 shadow-lg shadow-blue-900/50">
+                    <i class="fas fa-shield-halved text-2xl"></i>
+                </div>
+                <div>
+                    <h1 class="text-2xl font-bold tracking-tight">WP<span class="text-blue-500">GUARD</span></h1>
+                    <p class="text-xs text-slate-500 uppercase tracking-widest font-bold">Vulnerability Intelligence</p>
+                </div>
+            </div>
+            <div class="flex gap-4">
+                <button onclick="showSection('scan')" id="nav-scan" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"><i class="fas fa-search mr-2"></i>Scanner</button>
+                <button onclick="showSection('history')" id="nav-history" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"><i class="fas fa-history mr-2"></i>History</button>
+                <button onclick="showSection('settings')" id="nav-settings" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition"><i class="fas fa-gear mr-2"></i>Settings</button>
+            </div>
+        </nav>
+
+        <!-- Main Scanner Section -->
+        <section id="scan-section">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-8">
+                
+                <!-- Left: Control Panel -->
+                <div class="lg:col-span-4 space-y-6">
+                    <div class="glass-panel p-8 rounded-3xl shadow-2xl">
+                        <h2 class="text-xl font-bold mb-6">Start New Audit</h2>
+                        <div class="space-y-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Target URL</label>
+                                <input type="text" id="targetUrl" placeholder="https://example.com" 
+                                    class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-blue-500 outline-none transition">
+                            </div>
+                            <button onclick="startAudit()" id="scanBtn" class="w-full bg-blue-600 hover:bg-blue-700 py-4 rounded-xl font-bold transition flex items-center justify-center gap-3">
+                                <i class="fas fa-bolt"></i> Run Audit
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Live Log -->
+                    <div class="glass-panel rounded-3xl overflow-hidden flex flex-col">
+                        <div class="px-6 py-4 bg-slate-800/50 border-b border-slate-700 flex justify-between items-center">
+                            <span class="text-xs font-bold uppercase tracking-widest">Live Activity Log</span>
+                            <div class="flex gap-1">
+                                <div class="w-2 h-2 rounded-full bg-red-500"></div>
+                                <div class="w-2 h-2 rounded-full bg-yellow-500"></div>
+                                <div class="w-2 h-2 rounded-full bg-green-500"></div>
+                            </div>
+                        </div>
+                        <div id="logContainer" class="log-container p-4 mono text-[12px] space-y-1">
+                            <div class="text-slate-500">Waiting for target URL...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right: Real-time Results -->
+                <div class="lg:col-span-8 space-y-6">
+                    <div id="welcome-msg" class="glass-panel p-12 rounded-3xl text-center flex flex-col items-center justify-center min-h-[500px]">
+                        <div class="w-24 h-24 bg-slate-800 rounded-full flex items-center justify-center mb-6">
+                            <i class="fas fa-globe text-4xl text-slate-600"></i>
+                        </div>
+                        <h3 class="text-2xl font-bold mb-2 text-slate-300">No Active Audit</h3>
+                        <p class="text-slate-500 max-w-sm">Enter a WordPress site URL to begin deep scanning for vulnerabilities and logical flaws.</p>
+                    </div>
+
+                    <div id="results-dashboard" class="hidden space-y-5 animate-in fade-in duration-500">
+                        <!-- Overview -->
+                        <div class="glass-panel rounded-2xl p-5">
+                            <div class="flex flex-wrap items-start justify-between gap-4 mb-4">
+                                <div>
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold tracking-wider mb-1">Scan Summary</p>
+                                    <p id="resultsTargetUrl" class="text-sm mono text-blue-400 truncate max-w-md"></p>
+                                    <p id="scanPhaseLabel" class="text-[10px] text-yellow-400/90 uppercase font-bold tracking-wider mt-1 hidden"></p>
+                                </div>
+                                <div class="flex flex-wrap items-center gap-2">
+                                    <p id="statRisk" class="text-sm font-bold text-red-500 px-3 py-1 rounded-lg bg-slate-900/60 border border-slate-700">PENDING</p>
+                                    <div id="exportMenu" class="hidden relative">
+                                        <button type="button" onclick="toggleExportMenu()" class="text-xs font-bold text-blue-400 hover:text-blue-300 transition px-3 py-1.5 rounded-lg border border-blue-500/30 hover:border-blue-500/50">
+                                            <i class="fas fa-download mr-1"></i> Export
+                                            <i class="fas fa-chevron-down ml-1 text-[10px]"></i>
+                                        </button>
+                                        <div id="exportDropdown" class="hidden absolute right-0 top-full mt-2 w-56 rounded-xl border border-slate-700 bg-slate-900 shadow-2xl z-20 overflow-hidden">
+                                            <button type="button" onclick="exportResults(); closeExportMenu()" class="w-full text-left px-4 py-2.5 text-xs hover:bg-slate-800 transition">
+                                                <i class="fas fa-file-code mr-2 text-slate-400"></i> JSON
+                                            </button>
+                                            <div class="border-t border-slate-800 px-4 py-1.5 text-[10px] uppercase font-bold text-slate-500">PDF — Scan only</div>
+                                            <button type="button" onclick="exportPdf('en', false)" class="w-full text-left px-4 py-2.5 text-xs hover:bg-slate-800 transition">English</button>
+                                            <button type="button" onclick="exportPdf('fa', false)" class="w-full text-left px-4 py-2.5 text-xs hover:bg-slate-800 transition">فارسی</button>
+                                            <div class="border-t border-slate-800 px-4 py-1.5 text-[10px] uppercase font-bold text-slate-500">PDF — With AI report</div>
+                                            <button type="button" onclick="exportPdf('en', true)" class="w-full text-left px-4 py-2.5 text-xs hover:bg-slate-800 transition">English + AI</button>
+                                            <button type="button" onclick="exportPdf('fa', true)" class="w-full text-left px-4 py-2.5 text-xs hover:bg-slate-800 transition">فارسی + AI</button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-3 mb-4">
+                                <div class="bg-slate-900/40 rounded-xl px-3 py-2.5 text-center">
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Version</p>
+                                    <p id="statVersion" class="text-sm font-bold mono mt-0.5">--</p>
+                                </div>
+                                <div class="bg-slate-900/40 rounded-xl px-3 py-2.5 text-center">
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Users</p>
+                                    <p id="statUsers" class="text-sm font-bold mono mt-0.5">0</p>
+                                </div>
+                                <div class="bg-slate-900/40 rounded-xl px-3 py-2.5 text-center">
+                                    <p class="text-[10px] text-slate-500 uppercase font-bold">Components</p>
+                                    <p id="statPlugins" class="text-sm font-bold mono mt-0.5">0</p>
+                                </div>
+                            </div>
+                            <div id="severityBar" class="flex h-2 w-full rounded-full overflow-hidden bg-slate-800"></div>
+                            <div id="severityLegend" class="sev-legend"></div>
+                        </div>
+
+                        <!-- Tabbed detail panels -->
+                        <div class="glass-panel rounded-2xl overflow-hidden">
+                            <div class="flex items-center gap-1 px-4 pt-3 border-b border-slate-800 overflow-x-auto">
+                                <button type="button" class="result-tab active" data-tab="findings" onclick="switchResultTab('findings')">
+                                    <i class="fas fa-shield-virus mr-1"></i> Findings <span id="tabCountFindings" class="tab-count">0</span>
+                                </button>
+                                <button type="button" class="result-tab" data-tab="stack" onclick="switchResultTab('stack')">
+                                    <i class="fas fa-layer-group mr-1"></i> Stack <span id="tabCountStack" class="tab-count">0</span>
+                                </button>
+                                <button type="button" class="result-tab" data-tab="intel" onclick="switchResultTab('intel')" id="tabIntelBtn">
+                                    <i class="fas fa-address-book mr-1"></i> Intelligence <span id="tabCountIntel" class="tab-count">0</span>
+                                </button>
+                                <button type="button" class="result-tab" data-tab="ai" onclick="switchResultTab('ai')" id="tabAiBtn">
+                                    <i class="fas fa-robot mr-1"></i> AI Analysis
+                                </button>
+                            </div>
+
+                            <!-- Findings tab -->
+                            <div id="panel-findings" class="result-panel active p-5">
+                                <div id="vulnFilterBar" class="hidden flex flex-wrap gap-2 mb-4"></div>
+                                <div id="vulnList" class="results-scroll space-y-2 pr-1"></div>
+                                <div id="updateSection" class="hidden mt-6 pt-4 border-t border-slate-800">
+                                    <h4 class="text-xs font-bold uppercase tracking-wider text-amber-400/90 mb-3">
+                                        <i class="fas fa-arrow-circle-up mr-1"></i> Update recommendations
+                                    </h4>
+                                    <div id="updateList" class="results-scroll space-y-2 pr-1"></div>
+                                </div>
+                            </div>
+
+                            <!-- Stack tab -->
+                            <div id="panel-stack" class="result-panel p-5 space-y-0">
+                                <div class="stack-section">
+                                    <div class="stack-section-header">
+                                        <span class="stack-section-title">Infrastructure</span>
+                                    </div>
+                                    <div id="stackInfo" class="chip-list"></div>
+                                </div>
+                                <div class="stack-section pt-4">
+                                    <div class="stack-section-header">
+                                        <span class="stack-section-title">REST API Exposure</span>
+                                        <span id="restApiExposureScore" class="stack-section-count">—</span>
+                                    </div>
+                                    <div id="restApiExposureContent" class="sec-header-grid">
+                                        <span class="stack-empty">Not evaluated</span>
+                                    </div>
+                                </div>
+                                <div class="stack-section pt-4">
+                                    <div class="stack-section-header">
+                                        <span class="stack-section-title">Enumerated Users</span>
+                                        <span id="stackUserCount" class="stack-section-count">0</span>
+                                    </div>
+                                    <div class="stack-scroll">
+                                        <div id="userList" class="flex flex-col gap-2"></div>
+                                    </div>
+                                </div>
+                                <div class="stack-section pt-4">
+                                    <div class="stack-section-header">
+                                        <span class="stack-section-title">Plugins</span>
+                                        <span id="stackPluginCount" class="stack-section-count">0</span>
+                                    </div>
+                                    <div class="stack-scroll">
+                                        <div id="pList" class="chip-list"></div>
+                                    </div>
+                                </div>
+                                <div class="stack-section pt-4">
+                                    <div class="stack-section-header">
+                                        <span class="stack-section-title">Themes</span>
+                                        <span id="stackThemeCount" class="stack-section-count">0</span>
+                                    </div>
+                                    <div id="tList" class="chip-list"></div>
+                                </div>
+                            </div>
+
+                            <!-- Intelligence tab -->
+                            <div id="panel-intel" class="result-panel p-5">
+                                <div id="siteIntelEmpty" class="hidden text-center py-12 text-slate-500 text-sm">
+                                    <i class="fas fa-search text-2xl mb-3 block opacity-40"></i>
+                                    No site intelligence collected.
+                                </div>
+                                <div id="siteIntelContent" class="space-y-2"></div>
+                            </div>
+
+                            <!-- AI tab -->
+                            <div id="panel-ai" class="result-panel p-5">
+                                <div id="ai-panel-inner">
+                                    <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+                                        <p class="text-xs text-slate-500">Automated risk assessment and remediation guidance.</p>
+                                        <div class="flex flex-wrap gap-2">
+                                            <button type="button" onclick="exportPdf('en', true)" class="hidden text-xs font-bold text-violet-400 hover:text-violet-300 transition px-2.5 py-1 rounded-lg border border-violet-500/30" id="aiExportEnBtn">
+                                                <i class="fas fa-file-pdf mr-1"></i> PDF EN
+                                            </button>
+                                            <button type="button" onclick="exportPdf('fa', true)" class="hidden text-xs font-bold text-violet-400 hover:text-violet-300 transition px-2.5 py-1 rounded-lg border border-violet-500/30" id="aiExportFaBtn">
+                                                <i class="fas fa-file-pdf mr-1"></i> PDF FA
+                                            </button>
+                                            <button id="aiRetryBtn" onclick="requestAiAnalysis()" class="hidden text-xs font-bold text-cyan-400 hover:text-cyan-300 transition">
+                                                <i class="fas fa-rotate-right mr-1"></i> Re-analyze
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div id="aiAnalysisContent" class="ai-analysis-content text-sm"></div>
+                                    <div id="aiEmptyState" class="hidden text-center py-12 text-slate-500 text-sm">
+                                        <i class="fas fa-robot text-2xl mb-3 block opacity-40"></i>
+                                        Enable AI in Settings, then run analysis from here.
+                                        <button onclick="requestAiAnalysis()" id="aiStartBtn" class="mt-4 block mx-auto text-xs font-bold text-cyan-400 hover:text-cyan-300">
+                                            <i class="fas fa-play mr-1"></i> Start Analysis
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Settings Section -->
+        <section id="settings-section" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Proxy Settings -->
+                <div class="glass-panel rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center"><i class="fas fa-network-wired text-green-400 mr-3"></i> Proxy</h2>
+                            <p class="text-xs text-slate-500 mt-1">Route all scan requests through a proxy when enabled.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="proxyEnabled" onchange="markSettingsDirty()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Proxy URL</label>
+                            <input type="text" id="proxyUrl" placeholder="http://user:pass@host:port or socks5://host:port"
+                                oninput="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-green-500 outline-none transition mono text-sm">
+                            <p class="text-[10px] text-slate-600 mt-2">Supports HTTP, HTTPS, and SOCKS5 proxies.</p>
+                        </div>
+                        <button onclick="testProxy()" id="testProxyBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition">
+                            <i class="fas fa-plug mr-1"></i> Test Connection
+                        </button>
+                        <div id="proxyTestResult" class="hidden text-xs rounded-lg px-4 py-2"></div>
+                    </div>
+                </div>
+
+                <!-- AI Settings -->
+                <div class="glass-panel rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center"><i class="fas fa-brain text-cyan-400 mr-3"></i> AI Analysis</h2>
+                            <p class="text-xs text-slate-500 mt-1">Send scan results to an AI for risk assessment and remediation guidance.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="aiEnabled" onchange="markSettingsDirty()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Provider</label>
+                            <select id="aiProvider" onchange="onProviderChange()" class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition text-sm">
+                                <option value="openai">OpenAI</option>
+                                <option value="ollama">Ollama (Local)</option>
+                                <option value="custom">Custom (OpenAI-compatible)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Base URL</label>
+                            <input type="text" id="aiBaseUrl" placeholder="https://api.openai.com/v1"
+                                oninput="markSettingsDirty()" onblur="scheduleFetchAiModels()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition mono text-sm">
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">API Key <span id="apiKeyHint" class="text-slate-600 normal-case">(required)</span></label>
+                            <input type="password" id="aiApiKey" placeholder="sk-..."
+                                oninput="markSettingsDirty()" onblur="scheduleFetchAiModels()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition mono text-sm">
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">Model</label>
+                                <button type="button" onclick="fetchAiModels()" id="fetchModelsBtn"
+                                    class="text-[10px] font-bold text-cyan-400 hover:text-cyan-300 transition">
+                                    <i class="fas fa-rotate-right mr-1"></i> Load models
+                                </button>
+                            </div>
+                            <select id="aiModelSelect" onchange="onModelSelectChange()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition mono text-sm">
+                                <option value="">— Enter Base URL, then load models —</option>
+                            </select>
+                            <input type="text" id="aiModelCustom" placeholder="Custom model name"
+                                oninput="markSettingsDirty()"
+                                class="hidden w-full mt-2 bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition mono text-sm">
+                            <p id="aiModelsStatus" class="text-[10px] text-slate-600 mt-2"></p>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-900/30 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-semibold">Auto-analyze after scan</p>
+                                <p class="text-[10px] text-slate-500">Automatically send results to AI when scan completes.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="aiAutoAnalyze" onchange="markSettingsDirty()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div>
+                            <div class="flex justify-between items-center mb-2">
+                                <label class="text-xs font-bold text-slate-500 uppercase">System Prompt</label>
+                                <button onclick="resetSystemPrompt()" class="text-[10px] text-cyan-400 hover:text-cyan-300 font-bold">Reset to default</button>
+                            </div>
+                            <textarea id="aiSystemPrompt" rows="8" oninput="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-cyan-500 outline-none transition mono text-xs leading-relaxed resize-y"></textarea>
+                        </div>
+                        <button onclick="testAi()" id="testAiBtn" class="px-4 py-2 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-bold transition">
+                            <i class="fas fa-plug mr-1"></i> Test AI Connection
+                        </button>
+                        <div id="aiTestResult" class="hidden text-xs rounded-lg px-4 py-2"></div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Injection Testing -->
+                <div class="glass-panel rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center"><i class="fas fa-bug text-yellow-400 mr-3"></i> Search Injection Testing</h2>
+                            <p class="text-xs text-slate-500 mt-1">Discover search fields and probe for SQLi / reflected XSS.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="injEnabled" onchange="markSettingsDirty()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Max search forms</label>
+                            <input type="number" id="injMaxForms" min="1" max="30" oninput="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-yellow-500 outline-none transition mono text-sm">
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-900/30 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-semibold">Test SQL injection</p>
+                                <p class="text-[10px] text-slate-500">Look for database error patterns in responses.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="injTestSql" onchange="markSettingsDirty()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-900/30 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-semibold">Test reflected XSS</p>
+                                <p class="text-[10px] text-slate-500">Check if probe markers are echoed unescaped.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="injTestXss" onchange="markSettingsDirty()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Version / CVE Lookup -->
+                <div class="glass-panel rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center"><i class="fas fa-shield-virus text-purple-400 mr-3"></i> Version & CVE Lookup</h2>
+                            <p class="text-xs text-slate-500 mt-1">After plugin scan, check versions on wordpress.org and WPScan for known CVEs.</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="vulnLookupEnabled" onchange="markSettingsDirty()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-4">
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Wordfence API Key <span class="text-slate-600 normal-case">(recommended)</span></label>
+                            <input type="password" id="wordfenceApiKey" placeholder="Free key from wordfence.com/account/integrations"
+                                oninput="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-purple-500 outline-none transition mono text-sm">
+                            <p class="text-[10px] text-slate-600 mt-2">Downloads the full Wordfence vulnerability database locally. No per-scan API limits after sync.</p>
+                        </div>
+                        <div class="bg-slate-900/40 border border-slate-800 rounded-2xl p-4">
+                            <div class="flex flex-wrap items-center justify-between gap-3">
+                                <div>
+                                    <p class="text-sm font-semibold">Wordfence Database</p>
+                                    <p id="wordfenceCacheStatus" class="text-[11px] text-slate-500 mt-1">Checking cache status...</p>
+                                </div>
+                                <button type="button" onclick="updateWordfenceDatabase()" id="wordfenceUpdateBtn"
+                                    class="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-xl text-sm font-bold transition flex items-center gap-2">
+                                    <i class="fas fa-cloud-download-alt"></i> Update Database
+                                </button>
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">WPScan API Token <span class="text-slate-600 normal-case">(optional)</span></label>
+                            <input type="password" id="wpscanApiToken" placeholder="Free token from wpscan.com/register"
+                                oninput="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-purple-500 outline-none transition mono text-sm">
+                            <p class="text-[10px] text-slate-600 mt-2">Optional extra source. Without Wordfence: compares versions on wordpress.org only. With WPScan: 25 free requests/day.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dynamic Analysis (PoC Verification) -->
+                <div class="glass-panel rounded-3xl p-8">
+                    <div class="flex items-center justify-between mb-6">
+                        <div>
+                            <h2 class="text-xl font-bold flex items-center"><i class="fas fa-crosshairs text-orange-400 mr-3"></i> Dynamic Analysis (PoC Verification)</h2>
+                            <p class="text-xs text-slate-500 mt-1">After CVE lookup, safely probe Critical RCE/SQLi signatures on the live site (Nuclei-style templates).</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="dynEnabled" onchange="markSettingsDirty()">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="space-y-4">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Max probes</label>
+                                <input type="number" id="dynMaxProbes" min="1" max="50" oninput="markSettingsDirty()"
+                                    class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none transition mono text-sm">
+                            </div>
+                            <div>
+                                <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Delay (seconds)</label>
+                                <input type="number" id="dynDelay" min="0" max="5" step="0.1" oninput="markSettingsDirty()"
+                                    class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none transition mono text-sm">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="text-xs font-bold text-slate-500 uppercase mb-2 block">Minimum severity</label>
+                            <select id="dynMinSeverity" onchange="markSettingsDirty()"
+                                class="w-full bg-slate-900/50 border border-slate-700 rounded-xl px-4 py-3 focus:border-orange-500 outline-none transition text-sm">
+                                <option value="Critical">Critical only</option>
+                                <option value="High">Critical + High</option>
+                            </select>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-900/30 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-semibold">Verify RCE signatures</p>
+                                <p class="text-[10px] text-slate-500">Safe endpoint fingerprinting for remote code / upload bugs.</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dynTestRce" onchange="markSettingsDirty()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <div class="flex items-center justify-between bg-slate-900/30 rounded-xl px-4 py-3">
+                            <div>
+                                <p class="text-sm font-semibold">Verify SQLi signatures</p>
+                                <p class="text-[10px] text-slate-500">Differential probes for SQL error patterns (no data extraction).</p>
+                            </div>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="dynTestSqli" onchange="markSettingsDirty()">
+                                <span class="toggle-slider"></span>
+                            </label>
+                        </div>
+                        <p class="text-[10px] text-slate-600">Requires vulnerability lookup or injection testing enabled. Templates live in <code class="text-slate-500">database/poc_templates.json</code>.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-8 flex justify-end gap-4">
+                <span id="settingsStatus" class="text-xs text-slate-500 self-center"></span>
+                <button onclick="saveSettings()" id="saveSettingsBtn" class="px-8 py-3 bg-blue-600 hover:bg-blue-700 rounded-xl font-bold transition flex items-center gap-2">
+                    <i class="fas fa-save"></i> Save Settings
+                </button>
+            </div>
+        </section>
+
+        <!-- History Section -->
+        <section id="history-section" class="hidden">
+            <div class="glass-panel rounded-3xl p-8">
+                <h2 class="text-2xl font-bold mb-8">Scan History</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead>
+                            <tr class="text-slate-500 border-b border-slate-800">
+                                <th class="pb-4 px-4 font-bold text-xs uppercase">Target URL</th>
+                                <th class="pb-4 px-4 font-bold text-xs uppercase">Date</th>
+                                <th class="pb-4 px-4 font-bold text-xs uppercase">Version</th>
+                                <th class="pb-4 px-4 font-bold text-xs uppercase">Findings</th>
+                                <th class="pb-4 px-4 font-bold text-xs uppercase">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyTable"></tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        const socket = io({
+            transports: ['polling', 'websocket'],
+            reconnection: true,
+            reconnectionAttempts: 10,
+        });
+        let isScanning = false;
+        let lastResults = null;
+        let lastAiAnalysis = null;
+        let historyCache = [];
+        let settingsCache = null;
+        let providerPresets = {};
+        let defaultSystemPrompt = '';
+        let settingsDirty = false;
+        let aiAnalyzing = false;
+        let aiThinkingTimer = null;
+        let aiThinkingStartedAt = 0;
+        let aiThinkingBuffer = '';
+        let aiContentBuffer = '';
+        let aiStreamInitialized = false;
+        let aiContentRenderTimer = null;
+        let aiThinkingRenderTimer = null;
+        let aiAnalysisWatchdog = null;
+        let fetchModelsTimer = null;
+        let currentVulnFilter = 'all';
+        let cachedVulns = [];
+        let liveResults = {};
+
+        const SCAN_PHASE_LABELS = {
+            homepage: 'Homepage fetched',
+            stack: 'Stack fingerprint complete',
+            version: 'WordPress version detected',
+            users: 'User enumeration complete',
+            site_intelligence: 'Site intelligence complete',
+            auth: 'Auth surface checked',
+            injection: 'Injection tests complete',
+            misconfig: 'Misconfiguration scan complete',
+            components: 'Plugins & themes identified',
+            components_passive: 'Parsing homepage assets…',
+            components_crawl: 'Deep asset crawl complete',
+            components_probe: 'Active plugin/theme probe…',
+            components_resolved: 'Component versions resolved',
+            vulnerabilities: 'Vulnerability lookup complete',
+            dynamic: 'Dynamic verification complete',
+        };
+
+        // Escape untrusted strings
+        const esc = (value) => {
+            const div = document.createElement('div');
+            div.textContent = value === undefined || value === null ? '' : String(value);
+            return div.innerHTML;
+        };
+
+        function fixUtf8Mojibake(text) {
+            if (!text) return text;
+            if (!/[ØÙÚÛÃÂâ±×Ð]/.test(text)) return text;
+            try {
+                const bytes = Uint8Array.from(text, ch => ch.charCodeAt(0));
+                const repaired = new TextDecoder('utf-8').decode(bytes);
+                const persianCount = s => (s.match(/[\u0600-\u06FF]/g) || []).length;
+                if (persianCount(repaired) > 0) return repaired;
+            } catch (_) {}
+            return text;
+        }
+
+        function hasPersianText(text) {
+            return /[\u0600-\u06FF]/.test(text || '');
+        }
+
+        function applyAiTextDirection(text) {
+            const rtl = hasPersianText(text);
+            const dir = rtl ? 'rtl' : 'ltr';
+            const content = document.getElementById('aiAnalysisContent');
+            if (content) content.setAttribute('dir', dir);
+            ['aiThinkingPreview', 'aiContentStream'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.setAttribute('dir', dir);
+            });
+        }
+
+        function showSection(id) {
+            ['scan', 'history', 'settings'].forEach(s => {
+                document.getElementById(`${s}-section`).classList.toggle('hidden', id !== s);
+                const nav = document.getElementById(`nav-${s}`);
+                if (nav) {
+                    nav.classList.toggle('bg-blue-600', id === s);
+                    nav.classList.toggle('bg-slate-800', id !== s);
+                }
+            });
+            if (id === 'history') loadHistory();
+            if (id === 'settings') loadSettings();
+        }
+
+        function setScanning(state) {
+            isScanning = state;
+            const btn = document.getElementById('scanBtn');
+            btn.disabled = state;
+            btn.innerHTML = state
+                ? '<i class="fas fa-spinner fa-spin"></i> Auditing...'
+                : '<i class="fas fa-bolt"></i> Run Audit';
+            const phaseLabel = document.getElementById('scanPhaseLabel');
+            if (!state) {
+                phaseLabel.classList.add('hidden');
+            }
+        }
+
+        function switchResultTab(tab) {
+            document.querySelectorAll('.result-tab').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+            document.querySelectorAll('.result-panel').forEach(panel => {
+                panel.classList.toggle('active', panel.id === `panel-${tab}`);
+            });
+        }
+
+        window.switchResultTab = switchResultTab;
+
+        function startAudit() {
+            if (isScanning) return;
+            const url = document.getElementById('targetUrl').value.trim();
+            if (!url) { document.getElementById('targetUrl').focus(); return; }
+
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('results-dashboard').classList.remove('hidden');
+            document.getElementById('resultsTargetUrl').textContent = url;
+            ['logContainer', 'vulnList', 'userList', 'pList', 'tList', 'stackInfo', 'restApiExposureContent', 'siteIntelContent', 'severityLegend'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerHTML = '';
+            });
+            ['stackUserCount', 'stackPluginCount', 'stackThemeCount', 'restApiExposureScore', 'tabCountStack'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = '0';
+            });
+            document.getElementById('siteIntelEmpty').classList.add('hidden');
+            document.getElementById('vulnFilterBar').classList.add('hidden');
+            document.getElementById('statVersion').textContent = '--';
+            document.getElementById('statUsers').textContent = '0';
+            document.getElementById('statPlugins').textContent = '0';
+            document.getElementById('statRisk').textContent = 'SCANNING';
+            document.getElementById('statRisk').className = 'text-sm font-bold text-yellow-400 px-3 py-1 rounded-lg bg-slate-900/60 border border-slate-700';
+            document.getElementById('exportMenu').classList.add('hidden');
+            document.getElementById('scanPhaseLabel').classList.remove('hidden');
+            document.getElementById('scanPhaseLabel').textContent = 'Starting scan...';
+            liveResults = { url };
+            clearAiAnalysisPanel();
+            document.getElementById('aiEmptyState').classList.add('hidden');
+            currentVulnFilter = 'all';
+            cachedVulns = [];
+            switchResultTab('findings');
+            setScanning(true);
+
+            socket.emit('start_scan', { url });
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('targetUrl').addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') startAudit();
+            });
+            showSection('scan');
+            loadSettingsDefaults();
+            loadSettings();
+        });
+
+        socket.on('connect_error', () => addLog({ message: 'Connection to server lost.', type: 'error' }));
+
+        socket.on('disconnect', () => {
+            if (aiAnalyzing) {
+                clearAiAnalysisWatchdog();
+                resetAiStreamState();
+                switchResultTab('ai');
+                document.getElementById('aiEmptyState').classList.add('hidden');
+                document.getElementById('aiAnalysisContent').innerHTML =
+                    '<div class="text-red-400 py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Lost connection to server during AI analysis.</div>';
+                document.getElementById('aiRetryBtn').classList.remove('hidden');
+            }
+        });
+
+        socket.on('log', addLog);
+
+        function countSeverities(vulns) {
+            const counts = {};
+            (vulns || []).forEach(v => {
+                counts[v.severity] = (counts[v.severity] || 0) + 1;
+            });
+            return counts;
+        }
+
+        function mergeLiveResults(data) {
+            if (!data) return;
+            if (data.version !== undefined) liveResults.version = data.version;
+            if (data.is_wordpress !== undefined) liveResults.is_wordpress = data.is_wordpress;
+            if (data.stack) liveResults.stack = data.stack;
+            if (data.users) liveResults.users = data.users;
+            if (data.site_intelligence) liveResults.site_intelligence = data.site_intelligence;
+            if (data.auth_surface) liveResults.auth_surface = data.auth_surface;
+            if (data.search_forms) liveResults.search_forms = data.search_forms;
+            if (data.injection_findings) liveResults.injection_findings = data.injection_findings;
+            if (data.plugins) liveResults.plugins = data.plugins;
+            if (data.themes) liveResults.themes = data.themes;
+            if (data.asset_crawl) liveResults.asset_crawl = data.asset_crawl;
+            if (data.vulnerabilities) liveResults.vulnerabilities = data.vulnerabilities;
+            if (data.update_recommendations) liveResults.update_recommendations = data.update_recommendations;
+            if (data.core_version_status) liveResults.core_version_status = data.core_version_status;
+            if (data.dynamic_analysis_findings) liveResults.dynamic_analysis_findings = data.dynamic_analysis_findings;
+        }
+
+        function renderComponentChip(item, kind) {
+            const slug = item.slug || 'unknown';
+            const version = item.version || '?';
+            const latest = item.latest_version;
+            const vulns = item.known_vulnerabilities || [];
+            let badge = '';
+            let chipClass = kind === 'plugin'
+                ? 'bg-blue-500/10 text-blue-300 border-blue-500/20'
+                : 'bg-orange-500/10 text-orange-300 border-orange-500/20';
+
+            if (item.vulnerable && vulns.length) {
+                chipClass = 'bg-red-500/15 text-red-300 border-red-500/30';
+                const dynCount = (item.dynamic_verified || []).length;
+                badge = dynCount
+                    ? ` <span class="text-orange-400 font-bold">⚡ ${dynCount} LIVE</span>`
+                    : ` <span class="text-red-400 font-bold">⚠ ${vulns.length} CVE</span>`;
+            } else if (item.outdated) {
+                chipClass = 'bg-amber-500/10 text-amber-200 border-amber-500/30';
+                badge = latest ? ` <span class="text-amber-400/80">↑ v${esc(latest)}</span>` : '';
+            }
+
+            const titleParts = [slug, `installed: v${version}`];
+            if (latest) titleParts.push(`latest: v${latest}`);
+            vulns.slice(0, 3).forEach(v => titleParts.push(`[${v.severity}] ${v.title}`));
+
+            return `<span class="chip ${chipClass}" title="${esc(titleParts.join(' | '))}">
+                ${esc(slug)} <span class="text-slate-500">v${esc(version)}</span>${badge}
+            </span>`;
+        }
+
+        function renderComponentLists(plugins, themes) {
+            document.getElementById('stackPluginCount').textContent = plugins.length;
+            document.getElementById('stackThemeCount').textContent = themes.length;
+            document.getElementById('pList').innerHTML = plugins.length
+                ? plugins.map(p => renderComponentChip(p, 'plugin')).join('')
+                : '<span class="stack-empty">None identified</span>';
+            document.getElementById('tList').innerHTML = themes.length
+                ? themes.map(t => renderComponentChip(t, 'theme')).join('')
+                : '<span class="stack-empty">None identified</span>';
+        }
+
+        function renderStackInfo(data) {
+            const stack = data.stack || {};
+            const cdn = stack.cdn || {};
+            const stackItems = [];
+            if (data.version && data.version !== 'Unknown') {
+                stackItems.push(`<span class="chip bg-blue-500/10 text-blue-300 border-blue-500/20">WP ${esc(data.version)}</span>`);
+            }
+            if (stack.php_version) {
+                stackItems.push(`<span class="chip bg-green-500/10 text-green-300 border-green-500/20">PHP ${esc(stack.php_version)}</span>`);
+            }
+            if (stack.web_server) {
+                stackItems.push(`<span class="chip bg-cyan-500/10 text-cyan-300 border-cyan-500/20">${esc(stack.web_server)}</span>`);
+            }
+            if (cdn.detected) {
+                stackItems.push(`<span class="chip bg-yellow-500/10 text-yellow-200 border-yellow-500/20">CDN: ${esc(cdn.provider || 'Detected')}</span>`);
+            }
+            document.getElementById('stackInfo').innerHTML = stackItems.length
+                ? stackItems.join('')
+                : '<span class="stack-empty">Not detected</span>';
+        }
+
+        function renderUsersPartial(users) {
+            const richUsers = [];
+            const simpleUsers = [];
+            (users || []).forEach(u => {
+                const user = normalizeUser(u);
+                const isRestApi = user.source === 'rest_api';
+                const hasRichData = isRestApi && (user.name || user.description || user.avatar || user.profile_url);
+                if (hasRichData) richUsers.push(renderUserEntry(u));
+                else simpleUsers.push(renderSimpleUserChip(u));
+            });
+
+            let userHtml = '';
+            if (richUsers.length) userHtml += richUsers.join('');
+            if (simpleUsers.length) {
+                userHtml += `<div class="chip-list ${richUsers.length ? 'mt-1' : ''}">${simpleUsers.join('')}</div>`;
+            }
+            document.getElementById('stackUserCount').textContent = (users || []).length;
+            document.getElementById('userList').innerHTML = userHtml
+                || '<span class="stack-empty">None identified</span>';
+        }
+
+        function updateSummaryStats() {
+            const users = liveResults.users || [];
+            const plugins = liveResults.plugins || [];
+            const themes = liveResults.themes || [];
+            const vulns = liveResults.vulnerabilities || [];
+
+            if (liveResults.version) {
+                document.getElementById('statVersion').textContent = liveResults.version;
+            }
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statPlugins').textContent = plugins.length + themes.length;
+            document.getElementById('tabCountFindings').textContent = vulns.length;
+            document.getElementById('tabCountStack').textContent = users.length + plugins.length + themes.length;
+        }
+
+        function applyScanPartial(data) {
+            mergeLiveResults(data);
+            const phase = data.phase;
+            const phaseLabel = document.getElementById('scanPhaseLabel');
+            if (SCAN_PHASE_LABELS[phase]) {
+                phaseLabel.classList.remove('hidden');
+                phaseLabel.textContent = SCAN_PHASE_LABELS[phase];
+            }
+
+            switch (phase) {
+                case 'stack':
+                    renderStackInfo(liveResults);
+                    if (liveResults.stack?.rest_api_exposure) {
+                        renderRestApiExposure(liveResults.stack.rest_api_exposure);
+                    }
+                    break;
+                case 'version':
+                    document.getElementById('statVersion').textContent = liveResults.version || 'Unknown';
+                    renderStackInfo(liveResults);
+                    break;
+                case 'users':
+                    renderUsersPartial(liveResults.users);
+                    updateSummaryStats();
+                    break;
+                case 'site_intelligence':
+                    renderSiteIntelligence(liveResults.site_intelligence || {});
+                    break;
+                case 'auth':
+                    break;
+                case 'components':
+                case 'components_passive':
+                case 'components_crawl':
+                case 'components_probe':
+                case 'components_resolved':
+                    renderComponentLists(liveResults.plugins || [], liveResults.themes || []);
+                    updateSummaryStats();
+                    break;
+                case 'vulnerabilities':
+                case 'dynamic': {
+                    cachedVulns = liveResults.vulnerabilities || [];
+                    currentVulnFilter = 'all';
+                    renderSeverityBar(countSeverities(cachedVulns));
+                    renderVulnFilterBar(cachedVulns);
+                    renderVulnList(cachedVulns);
+                    renderUpdateList(liveResults.update_recommendations || []);
+                    renderComponentLists(liveResults.plugins || [], liveResults.themes || []);
+                    updateSummaryStats();
+                    updateRiskBadge(cachedVulns);
+                    break;
+                }
+                default:
+                    break;
+            }
+        }
+
+        socket.on('scan_partial', applyScanPartial);
+
+        function addLog(data) {
+            const container = document.getElementById('logContainer');
+            const entry = document.createElement('div');
+            entry.className = `log-entry log-${esc(data.type)} px-3 py-1 bg-slate-900/40`;
+            const timestamp = new Date().toLocaleTimeString([], { hour12: false });
+            entry.innerHTML = `<span class="text-slate-600 mr-2">[${timestamp}]</span> ${esc(data.message)}`;
+            container.appendChild(entry);
+            container.scrollTop = container.scrollHeight;
+        }
+
+        socket.on('scan_complete', (data) => {
+            setScanning(false);
+            lastResults = data;
+            renderResults(data);
+            document.getElementById('exportMenu').classList.remove('hidden');
+            updateAiPanelVisibility();
+        });
+
+        socket.on('scan_error', () => setScanning(false));
+
+        socket.on('ai_analysis_start', (data) => {
+            clearAiAnalysisWatchdog();
+            if (!aiStreamInitialized) {
+                startAiThinkingUI(data?.thinking_mode !== false);
+                aiStreamInitialized = true;
+            }
+            aiAnalysisWatchdog = setTimeout(() => {
+                if (aiAnalyzing) {
+                    showAiAnalysisError('AI analysis timed out. Check model, API key, and provider settings.');
+                }
+            }, 150000);
+        });
+
+        socket.on('ai_analysis_thinking', (data) => {
+            if (data?.chunk) {
+                aiThinkingBuffer += fixUtf8Mojibake(data.chunk);
+                scheduleAiThinkingRender();
+            }
+        });
+
+        socket.on('ai_analysis_chunk', (data) => {
+            if (data?.chunk) {
+                aiContentBuffer += fixUtf8Mojibake(data.chunk);
+                scheduleAiContentRender();
+            }
+        });
+
+        socket.on('ai_analysis_complete', async (data) => {
+            clearAiAnalysisWatchdog();
+            flushAiContentRender();
+            flushAiThinkingRender();
+            const savedContent = aiContentBuffer;
+            const savedThinking = aiThinkingBuffer;
+            stopAiThinkingUI();
+
+            let payload = data || {};
+            try {
+                const res = await fetch(`/api/analyze/result?sid=${encodeURIComponent(socket.id)}`);
+                if (res.ok) {
+                    payload = await res.json();
+                }
+            } catch (_) {}
+            if (!payload.analysis && savedContent) {
+                payload = { ...payload, analysis: savedContent };
+            }
+            if (!payload.thinking && savedThinking) {
+                payload = { ...payload, thinking: savedThinking };
+            }
+            payload.analysis = fixUtf8Mojibake(payload.analysis || '');
+            if (payload.thinking) payload.thinking = fixUtf8Mojibake(payload.thinking);
+            lastAiAnalysis = payload;
+            updateAiExportButtons();
+            renderAiAnalysis(payload);
+            aiStreamInitialized = false;
+        });
+
+        socket.on('ai_analysis_error', (data) => {
+            showAiAnalysisError(data?.message || 'AI analysis failed.');
+        });
+
+        function renderVulnFilterBar(vulns) {
+            const bar = document.getElementById('vulnFilterBar');
+            const severities = ['Critical', 'High', 'Medium', 'Low', 'Info'];
+            const counts = {};
+            vulns.forEach(v => { counts[v.severity] = (counts[v.severity] || 0) + 1; });
+
+            if (!vulns.length) {
+                bar.classList.add('hidden');
+                return;
+            }
+            bar.classList.remove('hidden');
+            const filters = [{ key: 'all', label: 'All', count: vulns.length }];
+            severities.forEach(s => {
+                if (counts[s]) filters.push({ key: s, label: s, count: counts[s] });
+            });
+
+            bar.innerHTML = filters.map(f => {
+                const active = currentVulnFilter === f.key;
+                return `<button type="button" data-sev="${esc(f.key)}" onclick="filterVulns(this.dataset.sev)"
+                    class="text-[10px] font-bold uppercase px-2.5 py-1 rounded-lg border transition
+                    ${active ? 'bg-blue-600/20 border-blue-500/50 text-blue-300' : 'bg-slate-900/40 border-slate-700 text-slate-500 hover:text-slate-300'}">
+                    ${esc(f.label)} (${f.count})
+                </button>`;
+            }).join('');
+        }
+
+        window.filterVulns = (severity) => {
+            currentVulnFilter = severity;
+            renderVulnFilterBar(cachedVulns);
+            renderVulnList(cachedVulns);
+        };
+
+        function renderVulnCard(v) {
+            const isDynamic = v.verified_dynamic || (v.name || '').includes('CONFIRMED');
+            const cardClass = isDynamic
+                ? 'vuln-item rounded-xl bg-orange-950/25 border border-orange-600/40 border-l-4 border-l-orange-500'
+                : `vuln-item rounded-xl bg-slate-900/50 border border-slate-800 border-l-4 ${getSevBorder(v.severity)}`;
+            const titleClass = isDynamic ? 'font-bold text-sm text-orange-300' : 'font-semibold text-sm text-slate-200';
+            const badgeClass = isDynamic
+                ? 'text-[9px] font-black uppercase px-2 py-0.5 rounded shrink-0 bg-orange-600 text-white'
+                : `text-[9px] font-black uppercase px-2 py-0.5 rounded shrink-0 ${getSevBadge(v.severity)}`;
+            const badgeLabel = isDynamic ? 'LIVE' : v.severity;
+            const openAttr = ['Critical', 'High'].includes(v.severity) || isDynamic ? ' open' : '';
+            const dynamicNote = isDynamic && v.poc_template
+                ? `<p class="text-[10px] text-orange-400/80 px-3 pb-1 pl-7 mono">PoC template: ${esc(v.poc_template)}${v.probe_type ? ` · ${esc(v.probe_type)}` : ''}</p>`
+                : '';
+            return `
+                <details class="${cardClass}"${openAttr}>
+                    <summary class="flex items-center gap-2 px-3 py-2.5">
+                        <i class="fas fa-chevron-right vuln-chevron text-[10px] text-slate-600 shrink-0"></i>
+                        <span class="${titleClass} flex-1 min-w-0 truncate">${esc(v.name)}</span>
+                        <span class="${badgeClass}">${esc(badgeLabel)}</span>
+                    </summary>
+                    ${dynamicNote}
+                    <p class="text-xs text-slate-400 leading-relaxed px-3 pb-3 pl-7">${esc(v.description)}</p>
+                </details>`;
+        }
+
+        function renderUpdateList(updates) {
+            const section = document.getElementById('updateSection');
+            const list = document.getElementById('updateList');
+            if (!updates.length) {
+                section.classList.add('hidden');
+                list.innerHTML = '';
+                return;
+            }
+            section.classList.remove('hidden');
+            list.innerHTML = updates.map(u => `
+                <details class="vuln-item rounded-xl bg-amber-950/15 border border-amber-700/30 border-l-4 border-l-amber-500">
+                    <summary class="flex items-center gap-2 px-3 py-2.5">
+                        <i class="fas fa-chevron-right vuln-chevron text-[10px] text-slate-600 shrink-0"></i>
+                        <span class="font-semibold text-sm text-amber-200 flex-1 min-w-0 truncate">${esc(u.name)}</span>
+                        <span class="text-[9px] font-black uppercase px-2 py-0.5 rounded shrink-0 bg-amber-600/80 text-white">UPDATE</span>
+                    </summary>
+                    <p class="text-xs text-slate-400 leading-relaxed px-3 pb-3 pl-7">${esc(u.description)}</p>
+                </details>`).join('');
+        }
+
+        function renderVulnList(vulns) {
+            const filtered = currentVulnFilter === 'all'
+                ? vulns
+                : vulns.filter(v => v.severity === currentVulnFilter);
+            const vulnList = document.getElementById('vulnList');
+            if (!vulns.length) {
+                vulnList.innerHTML = '<div class="text-slate-500 text-center py-10 text-sm"><i class="fas fa-check-circle text-green-500/50 text-2xl mb-2 block"></i>No security vulnerabilities detected.</div>';
+            } else if (!filtered.length) {
+                vulnList.innerHTML = '<div class="text-slate-500 text-center py-8 text-sm">No findings for this filter.</div>';
+            } else {
+                vulnList.innerHTML = filtered.map(renderVulnCard).join('');
+            }
+        }
+
+        function updateRiskBadge(vulns) {
+            const danger = (vulns || []).filter(v => ['High', 'Critical'].includes(v.severity)).length;
+            const statRisk = document.getElementById('statRisk');
+            statRisk.textContent = danger > 0 ? 'HIGH RISK' : (vulns.length ? 'MEDIUM' : 'LOW');
+            statRisk.className = 'text-sm font-bold px-3 py-1 rounded-lg bg-slate-900/60 border border-slate-700 ' +
+                (danger > 0 ? 'text-red-400 border-red-500/30' : (vulns.length ? 'text-yellow-400 border-yellow-500/30' : 'text-green-400 border-green-500/30'));
+        }
+
+        function renderResults(data) {
+            const vulns = data.vulnerabilities || [];
+            const updates = data.update_recommendations || [];
+            const users = data.users || [];
+            const plugins = data.plugins || [];
+            const themes = data.themes || [];
+            cachedVulns = vulns;
+            currentVulnFilter = 'all';
+
+            document.getElementById('statVersion').textContent = data.version || 'Unknown';
+            document.getElementById('statUsers').textContent = users.length;
+            document.getElementById('statPlugins').textContent = plugins.length + themes.length;
+            document.getElementById('tabCountFindings').textContent = vulns.length;
+            document.getElementById('tabCountStack').textContent = users.length + plugins.length + themes.length;
+
+            updateRiskBadge(vulns);
+
+            renderSeverityBar(data.severity_counts || {});
+            renderVulnFilterBar(vulns);
+            renderVulnList(vulns);
+            renderUpdateList(updates);
+            renderStackTab(data);
+
+            renderSiteIntelligence(data.site_intelligence || {});
+            if (!aiAnalyzing) {
+                clearAiAnalysisPanel();
+            }
+            updateAiEmptyState();
+        }
+
+        function renderRestApiExposure(sec) {
+            const container = document.getElementById('restApiExposureContent');
+            const scoreEl = document.getElementById('restApiExposureScore');
+            const check = sec.checks?.rest_api_root || {};
+            const score = sec.score ?? 0;
+            const maxScore = sec.max_score ?? 25;
+            const grade = (sec.grade || 'F').toLowerCase();
+
+            if (!check.status) {
+                scoreEl.textContent = '—';
+                container.innerHTML = '<span class="stack-empty">Not evaluated</span>';
+                return;
+            }
+
+            scoreEl.innerHTML = `<span class="sec-grade-badge sec-grade-${grade}">${esc(sec.grade || 'F')}</span> ${score}/${maxScore}`;
+
+            const status = check.status || 'unknown';
+            const rowClass = ['good', 'restricted', 'blocked'].includes(status) ? 'good'
+                : ['weak', 'report-only', 'open'].includes(status) ? 'weak'
+                : 'missing';
+            const checkScore = check.score ?? 0;
+            const checkMax = check.max_score ?? 25;
+            const note = check.note || 'No details';
+            const metaLine = check.route_count != null
+                ? `<div class="text-[10px] text-slate-500 mt-0.5">${check.route_count} routes exposed · HTTP ${check.status_code ?? '?'}</div>`
+                : '';
+
+            container.innerHTML = `<div class="sec-header-row ${rowClass}">
+                <div class="min-w-0">
+                    <div class="sec-header-name">REST API (/wp-json/wp/v2/)</div>
+                    <div class="sec-header-note">${esc(note)}</div>
+                    ${metaLine}
+                </div>
+                <span class="sec-header-score">${checkScore}/${checkMax}</span>
+            </div>`;
+        }
+
+        function renderStackTab(data) {
+            const users = data.users || [];
+            const plugins = data.plugins || [];
+            const themes = data.themes || [];
+            const stack = data.stack || {};
+            const cdn = stack.cdn || {};
+
+            document.getElementById('stackUserCount').textContent = users.length;
+            document.getElementById('stackPluginCount').textContent = plugins.length;
+            document.getElementById('stackThemeCount').textContent = themes.length;
+
+            const stackItems = [];
+            if (data.version && data.version !== 'Unknown') {
+                stackItems.push(`<span class="chip bg-blue-500/10 text-blue-300 border-blue-500/20">WP ${esc(data.version)}</span>`);
+            }
+            if (stack.php_version) {
+                stackItems.push(`<span class="chip bg-green-500/10 text-green-300 border-green-500/20">PHP ${esc(stack.php_version)}</span>`);
+            }
+            if (stack.web_server) {
+                stackItems.push(`<span class="chip bg-cyan-500/10 text-cyan-300 border-cyan-500/20">${esc(stack.web_server)}</span>`);
+            }
+            if (cdn.detected) {
+                stackItems.push(`<span class="chip bg-yellow-500/10 text-yellow-200 border-yellow-500/20">CDN: ${esc(cdn.provider || 'Detected')}</span>`);
+            }
+            document.getElementById('stackInfo').innerHTML = stackItems.length
+                ? stackItems.join('')
+                : '<span class="stack-empty">Not detected</span>';
+
+            renderRestApiExposure(stack.rest_api_exposure || {});
+
+            const richUsers = [];
+            const simpleUsers = [];
+            users.forEach(u => {
+                const user = normalizeUser(u);
+                const isRestApi = user.source === 'rest_api';
+                const hasRichData = isRestApi && (user.name || user.description || user.avatar || user.profile_url);
+                if (hasRichData) richUsers.push(renderUserEntry(u));
+                else simpleUsers.push(renderSimpleUserChip(u));
+            });
+
+            let userHtml = '';
+            if (richUsers.length) userHtml += richUsers.join('');
+            if (simpleUsers.length) {
+                userHtml += `<div class="chip-list ${richUsers.length ? 'mt-1' : ''}">${simpleUsers.join('')}</div>`;
+            }
+            document.getElementById('userList').innerHTML = userHtml
+                || '<span class="stack-empty">None identified</span>';
+
+            renderComponentLists(plugins, themes);
+        }
+
+        function renderSiteIntelligence(intel) {
+            const container = document.getElementById('siteIntelContent');
+            const empty = document.getElementById('siteIntelEmpty');
+            const contacts = intel.contacts || {};
+            const sitemap = intel.sitemap || {};
+            const contactPages = intel.contact_pages || [];
+            const sources = intel.sources || [];
+
+            const hasContacts = (contacts.emails || []).length
+                || (contacts.phones || []).length
+                || (contacts.social_links || []).length
+                || (contacts.addresses || []).length
+                || contacts.organization;
+            const adminUrls = intel.admin_login_urls || [];
+            const hasSitemap = sitemap.found || (sitemap.urls || []).length;
+            const hasAnything = hasContacts || hasSitemap || contactPages.length || adminUrls.length;
+
+            document.getElementById('tabCountIntel').textContent = hasAnything ? '✓' : '0';
+
+            if (!hasAnything) {
+                container.innerHTML = '';
+                empty.classList.remove('hidden');
+                return;
+            }
+            empty.classList.add('hidden');
+
+            const sections = [];
+
+            if (contacts.organization) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30" open>
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-teal-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Organization
+                    </summary>
+                    <div class="px-4 pb-3"><p class="text-sm text-slate-200">${esc(contacts.organization)}</p></div>
+                </details>`);
+            }
+
+            if (adminUrls.length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-amber-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Admin / Login URLs <span class="text-slate-600 normal-case font-normal ml-1">(${adminUrls.length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 space-y-1.5">${adminUrls.map(a =>
+                        `<a href="${esc(a.url)}" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-2 p-2 bg-amber-500/5 border border-amber-500/15 rounded-lg hover:border-amber-500/30 transition text-xs">
+                           <i class="fas fa-lock text-amber-400/70 text-[10px]"></i>
+                           <span class="text-amber-200/90 mono truncate">${esc(a.path || a.url)}</span>
+                        </a>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if ((contacts.emails || []).length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-teal-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Emails <span class="text-slate-600 normal-case font-normal ml-1">(${(contacts.emails || []).length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 chip-list">${contacts.emails.map(e =>
+                        `<a href="mailto:${esc(e)}" class="chip bg-teal-500/10 text-teal-300 border-teal-500/20 hover:bg-teal-500/20 transition">${esc(e)}</a>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if ((contacts.phones || []).length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-green-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Phones <span class="text-slate-600 normal-case font-normal ml-1">(${(contacts.phones || []).length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 chip-list">${contacts.phones.map(p =>
+                        `<a href="tel:${esc(p.replace(/\s/g, ''))}" class="chip bg-green-500/10 text-green-300 border-green-500/20">${esc(p)}</a>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if ((contacts.addresses || []).length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Addresses <span class="text-slate-600 normal-case font-normal ml-1">(${(contacts.addresses || []).length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 space-y-1">${contacts.addresses.map(a =>
+                        `<p class="text-xs text-slate-300 bg-slate-800/40 rounded-lg px-3 py-2">${esc(a)}</p>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if ((contacts.social_links || []).length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-blue-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Social Links <span class="text-slate-600 normal-case font-normal ml-1">(${(contacts.social_links || []).length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 chip-list">${contacts.social_links.map(s =>
+                        `<a href="${esc(s.url)}" target="_blank" rel="noopener noreferrer"
+                           class="chip bg-blue-500/10 text-blue-300 border-blue-500/20 hover:bg-blue-500/20 transition">${esc(s.platform)}</a>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if (contactPages.length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-teal-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Contact Pages <span class="text-slate-600 normal-case font-normal ml-1">(${contactPages.length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 space-y-1.5 max-h-48 overflow-y-auto">${contactPages.map(p =>
+                        `<a href="${esc(p.url)}" target="_blank" rel="noopener noreferrer"
+                           class="flex items-center gap-2 p-2 bg-slate-800/30 border border-slate-700/30 rounded-lg hover:border-teal-500/30 transition text-xs">
+                           <i class="fas fa-link text-teal-400/70 text-[10px]"></i>
+                           <span class="text-teal-300 mono truncate">${esc(p.url)}</span>
+                        </a>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            if (hasSitemap) {
+                const urls = sitemap.urls || [];
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-slate-400 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Sitemap <span class="text-slate-600 normal-case font-normal ml-1">(${sitemap.total || urls.length} URLs)</span>
+                    </summary>
+                    <div class="px-4 pb-3 max-h-48 overflow-y-auto space-y-0.5 bg-slate-900/40 rounded-lg p-2 border border-slate-800/50">
+                        ${urls.slice(0, 50).map(u =>
+                            `<a href="${esc(u)}" target="_blank" rel="noopener noreferrer"
+                               class="block text-[10px] mono text-slate-400 hover:text-teal-300 truncate py-0.5">${esc(u)}</a>`
+                        ).join('') || '<span class="text-slate-600 italic text-xs">No URLs parsed</span>'}
+                        ${urls.length > 50 ? `<p class="text-[10px] text-slate-600 pt-2">+ ${urls.length - 50} more in export</p>` : ''}
+                    </div>
+                </details>`);
+            }
+
+            if (sources.length) {
+                sections.push(`<details class="intel-section rounded-xl border border-slate-800 bg-slate-900/30">
+                    <summary class="flex items-center gap-2 px-4 py-3 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                        <i class="fas fa-chevron-right intel-chevron text-[10px] text-slate-600"></i>
+                        Data Sources <span class="text-slate-600 normal-case font-normal ml-1">(${sources.length})</span>
+                    </summary>
+                    <div class="px-4 pb-3 chip-list">${sources.map(s =>
+                        `<span class="chip bg-slate-800/60 text-slate-400 border-slate-700/40">${esc(s.source || 'page')}</span>`
+                    ).join('')}</div>
+                </details>`);
+            }
+
+            container.innerHTML = sections.join('');
+        }
+
+        function normalizeUser(u) {
+            if (typeof u === 'string') return { username: u, source: 'unknown' };
+            return u || { username: '?', source: 'unknown' };
+        }
+
+        function renderUserEntry(u) {
+            const user = normalizeUser(u);
+            const username = user.username || user.slug || '?';
+            const isRestApi = user.source === 'rest_api';
+            const hasRichData = isRestApi && (user.name || user.description || user.avatar || user.profile_url);
+
+            if (hasRichData) {
+                const avatar = user.avatar
+                    ? `<img src="${esc(user.avatar)}" alt="" class="w-11 h-11 rounded-full border border-purple-500/30 shrink-0 object-cover" loading="lazy">`
+                    : `<div class="w-11 h-11 rounded-full bg-purple-500/20 flex items-center justify-center shrink-0"><i class="fas fa-user text-purple-400"></i></div>`;
+                const nameLine = user.name
+                    ? `<p class="text-sm font-bold text-slate-200 truncate">${esc(user.name)}</p>`
+                    : '';
+                const desc = user.description
+                    ? `<p class="text-[11px] text-slate-400 mt-1 line-clamp-3 leading-relaxed">${esc(user.description)}</p>`
+                    : '';
+                const profile = user.profile_url
+                    ? `<a href="${esc(user.profile_url)}" target="_blank" rel="noopener noreferrer" class="text-[10px] text-purple-400 hover:text-purple-300 mt-2 inline-flex items-center gap-1"><i class="fas fa-external-link-alt"></i> View profile</a>`
+                    : '';
+                const idLine = user.id != null
+                    ? `<span class="text-[9px] text-slate-600 mono">ID: ${esc(String(user.id))}</span>`
+                    : '';
+                return `<div class="flex gap-3 p-2.5 bg-purple-500/5 border border-purple-500/15 rounded-xl w-full">
+                    ${avatar}
+                    <div class="min-w-0 flex-1">
+                        <div class="flex items-center gap-2 flex-wrap">
+                            <span class="text-xs mono text-purple-400 font-bold">@${esc(username)}</span>
+                            <span class="text-[9px] uppercase px-1.5 py-0.5 rounded bg-purple-500/15 text-purple-300/80 font-bold">REST</span>
+                            ${idLine}
+                        </div>
+                        ${nameLine}
+                        ${desc}
+                        ${profile}
+                    </div>
+                </div>`;
+            }
+
+            const sourceLabel = {
+                rest_api: 'REST API',
+                author: 'Author enum',
+                oembed: 'oEmbed',
+            }[user.source] || '';
+            const badge = sourceLabel
+                ? `<span class="text-[9px] opacity-70 ml-1">(${esc(sourceLabel)})</span>`
+                : '';
+            return `<span class="chip bg-purple-500/10 text-purple-300 border-purple-500/20">${esc(username)}${badge}</span>`;
+        }
+
+        function renderSimpleUserChip(u) {
+            const user = normalizeUser(u);
+            const username = user.username || user.slug || '?';
+            const sourceLabel = {
+                rest_api: 'REST',
+                author: 'Author',
+                oembed: 'oEmbed',
+            }[user.source] || '';
+            const badge = sourceLabel
+                ? `<span class="text-[9px] opacity-60 ml-0.5">${esc(sourceLabel)}</span>`
+                : '';
+            return `<span class="chip bg-purple-500/10 text-purple-300 border-purple-500/20">${esc(username)}${badge}</span>`;
+        }
+
+        function renderSeverityBar(counts) {
+            const order = [
+                ['Critical', 'bg-red-600', 'Critical'], ['High', 'bg-orange-500', 'High'],
+                ['Medium', 'bg-yellow-500', 'Medium'], ['Low', 'bg-blue-500', 'Low'], ['Info', 'bg-slate-500', 'Info']
+            ];
+            const bar = document.getElementById('severityBar');
+            const legend = document.getElementById('severityLegend');
+            const total = order.reduce((sum, [k]) => sum + (counts[k] || 0), 0);
+            if (!total) {
+                bar.innerHTML = '<div class="h-full w-full bg-slate-700/30"></div>';
+                legend.innerHTML = '<span class="text-[10px] text-slate-600">No severity data</span>';
+                return;
+            }
+            bar.innerHTML = order.filter(([k]) => counts[k]).map(([k, color]) =>
+                `<div class="${color} h-full" style="width:${(counts[k] / total) * 100}%" title="${k}: ${counts[k]}"></div>`
+            ).join('');
+            legend.innerHTML = order.filter(([k]) => counts[k]).map(([k, color, label]) =>
+                `<span class="sev-legend-item"><span class="sev-dot ${color}"></span>${label}: ${counts[k]}</span>`
+            ).join('');
+        }
+
+        function getSevBorder(s) {
+            return { Critical: 'border-red-600', High: 'border-orange-500', Medium: 'border-yellow-500' }[s] || 'border-blue-500';
+        }
+        function getSevBadge(s) {
+            return { Critical: 'bg-red-500 text-white', High: 'bg-orange-500 text-black', Medium: 'bg-yellow-500 text-black' }[s] || 'bg-blue-500 text-white';
+        }
+
+        function exportResults() {
+            if (!lastResults) return;
+            const blob = new Blob([JSON.stringify(lastResults, null, 2)], { type: 'application/json' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = `wp-audit-${Date.now()}.json`;
+            a.click();
+            URL.revokeObjectURL(a.href);
+        }
+
+        function toggleExportMenu() {
+            document.getElementById('exportDropdown').classList.toggle('hidden');
+        }
+
+        function closeExportMenu() {
+            document.getElementById('exportDropdown').classList.add('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const menu = document.getElementById('exportMenu');
+            if (!menu || menu.classList.contains('hidden')) return;
+            if (!menu.contains(e.target)) closeExportMenu();
+        });
+
+        async function exportPdf(lang, includeAi) {
+            if (!lastResults) return;
+            closeExportMenu();
+
+            const payload = {
+                results: lastResults,
+                lang,
+                include_ai: includeAi,
+                sid: socket.id,
+            };
+            if (includeAi && lastAiAnalysis?.analysis) {
+                payload.analysis = lastAiAnalysis.analysis;
+                payload.ai_meta = {
+                    model: lastAiAnalysis.model,
+                    provider: lastAiAnalysis.provider,
+                };
+            }
+
+            try {
+                const res = await fetch('/api/export/pdf', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (!res.ok) {
+                    const data = await res.json().catch(() => ({}));
+                    alert(data.error || 'PDF export failed.');
+                    return;
+                }
+                const blob = await res.blob();
+                const disposition = res.headers.get('Content-Disposition') || '';
+                const match = disposition.match(/filename="?([^";]+)"?/i);
+                const filename = match ? match[1] : `wp-guard-report-${lang}.pdf`;
+                const a = document.createElement('a');
+                a.href = URL.createObjectURL(blob);
+                a.download = filename;
+                a.click();
+                URL.revokeObjectURL(a.href);
+            } catch (e) {
+                alert(`PDF export failed: ${e.message}`);
+            }
+        }
+
+        async function loadHistory() {
+            try {
+                historyCache = await fetchJson('/api/history');
+            } catch (e) {
+                const table = document.getElementById('historyTable');
+                table.innerHTML = `<tr><td colspan="5" class="py-8 text-center text-red-400">Could not load history: ${esc(e.message)}</td></tr>`;
+                return;
+            }
+            const table = document.getElementById('historyTable');
+            if (!historyCache.length) {
+                table.innerHTML = '<tr><td colspan="5" class="py-8 text-center text-slate-500">No scans yet.</td></tr>';
+                return;
+            }
+            table.innerHTML = historyCache.map((h, i) => `
+                <tr class="border-b border-slate-800/50 hover:bg-slate-800/20 transition">
+                    <td class="py-4 px-4 mono text-xs text-blue-400">${esc(h.url)}</td>
+                    <td class="py-4 px-4 text-xs text-slate-500">${esc(h.timestamp)}</td>
+                    <td class="py-4 px-4 text-xs">${esc(h.version)}</td>
+                    <td class="py-4 px-4">
+                        <span class="px-2 py-1 bg-red-500/10 text-red-500 rounded text-[10px] font-bold">
+                            ${(h.results.vulnerabilities || []).length} Found
+                        </span>
+                    </td>
+                    <td class="py-4 px-4 flex gap-3">
+                        <button onclick="viewDetails(${i})" class="text-blue-500 hover:text-blue-400 text-xs font-bold uppercase">View</button>
+                        <button onclick="deleteScan(${Number(h.id)})" class="text-red-500/70 hover:text-red-500 text-xs font-bold uppercase">Delete</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        window.viewDetails = (index) => {
+            const entry = historyCache[index];
+            if (!entry) return;
+            lastResults = entry.results;
+            showSection('scan');
+            document.getElementById('targetUrl').value = entry.url || '';
+            document.getElementById('resultsTargetUrl').textContent = entry.url || '';
+            document.getElementById('welcome-msg').classList.add('hidden');
+            document.getElementById('results-dashboard').classList.remove('hidden');
+            renderResults(entry.results);
+            document.getElementById('exportMenu').classList.remove('hidden');
+            clearAiAnalysisPanel();
+            updateAiPanelVisibility();
+            switchResultTab('findings');
+        };
+
+        window.deleteScan = async (id) => {
+            await fetch(`/api/history/${id}`, { method: 'DELETE' });
+            loadHistory();
+        };
+
+        // ── Settings ──────────────────────────────────────────────
+
+        async function fetchJson(url, options = {}) {
+            const res = await fetch(url, options);
+            const contentType = res.headers.get('content-type') || '';
+            let data = null;
+            if (contentType.includes('application/json')) {
+                data = await res.json();
+            } else {
+                const text = await res.text();
+                const snippet = text.replace(/\s+/g, ' ').trim().slice(0, 120);
+                throw new Error(res.ok ? 'Server returned invalid JSON.' : (snippet || `HTTP ${res.status}`));
+            }
+            if (!res.ok) {
+                throw new Error(data?.error || data?.message || `HTTP ${res.status}`);
+            }
+            return data;
+        }
+
+        async function loadSettingsDefaults() {
+            const data = await fetchJson('/api/settings/defaults');
+            defaultSystemPrompt = data.system_prompt || '';
+            providerPresets = data.presets || {};
+            defaultScanSettings = data.defaults?.scan || {};
+        }
+
+        let defaultScanSettings = {};
+
+        async function loadSettings() {
+            try {
+                settingsCache = await fetchJson('/api/settings');
+                applySettingsToForm(settingsCache);
+                settingsDirty = false;
+                document.getElementById('settingsStatus').textContent = '';
+            } catch (e) {
+                document.getElementById('settingsStatus').textContent = `Could not load settings: ${e.message}`;
+            }
+        }
+
+        function applySettingsToForm(s) {
+            document.getElementById('proxyEnabled').checked = s.proxy?.enabled || false;
+            document.getElementById('proxyUrl').value = s.proxy?.url || '';
+
+            document.getElementById('aiEnabled').checked = s.ai?.enabled || false;
+            document.getElementById('aiProvider').value = s.ai?.provider || 'openai';
+            document.getElementById('aiBaseUrl').value = s.ai?.base_url || '';
+            document.getElementById('aiAutoAnalyze').checked = s.ai?.auto_analyze !== false;
+            document.getElementById('aiSystemPrompt').value = s.ai?.system_prompt || defaultSystemPrompt;
+
+            const keyInput = document.getElementById('aiApiKey');
+            keyInput.value = '';
+            keyInput.placeholder = s.ai?.api_key_set ? '••••••••  (saved — leave blank to keep)' : 'sk-...';
+
+            onProviderChange(false, false);
+            fetchAiModels(s.ai?.model || '');
+
+            const scan = s.scan || {};
+            const inj = scan.injection || {};
+            document.getElementById('injEnabled').checked = inj.enabled !== false;
+            document.getElementById('injMaxForms').value = inj.max_forms ?? 8;
+            document.getElementById('injTestSql').checked = inj.test_sql !== false;
+            document.getElementById('injTestXss').checked = inj.test_xss !== false;
+
+            const dyn = scan.dynamic_analysis || {};
+            document.getElementById('dynEnabled').checked = dyn.enabled !== false;
+            document.getElementById('dynMaxProbes').value = dyn.max_probes ?? 15;
+            document.getElementById('dynDelay').value = dyn.delay_seconds ?? 0.5;
+            document.getElementById('dynMinSeverity').value = dyn.min_severity || 'Critical';
+            document.getElementById('dynTestRce').checked = dyn.test_rce !== false;
+            document.getElementById('dynTestSqli').checked = dyn.test_sqli !== false;
+
+            const vuln = scan.vuln_lookup || {};
+            document.getElementById('vulnLookupEnabled').checked = vuln.enabled !== false;
+            const wpscanInput = document.getElementById('wpscanApiToken');
+            wpscanInput.value = '';
+            wpscanInput.placeholder = vuln.wpscan_api_token_set
+                ? '••••••••  (saved — leave blank to keep)'
+                : 'Free token from wpscan.com/register';
+            const wfInput = document.getElementById('wordfenceApiKey');
+            wfInput.value = '';
+            if (vuln.wordfence_api_key_from_env) {
+                wfInput.placeholder = '••••••••  (from .env — enter here to save in database)';
+            } else {
+                wfInput.placeholder = vuln.wordfence_api_key_set
+                    ? '••••••••  (saved — leave blank to keep)'
+                    : 'Free key from wordfence.com/account/integrations';
+            }
+            refreshWordfenceStatus();
+        }
+
+        function getSelectedModel() {
+            const select = document.getElementById('aiModelSelect');
+            const custom = document.getElementById('aiModelCustom');
+            if (select.value === '__custom__') {
+                return custom.value.trim();
+            }
+            return select.value.trim();
+        }
+
+        function resolveModelSelection(preferred, models) {
+            const wanted = (preferred || '').trim();
+            if (!wanted) return '';
+            if (models.includes(wanted)) return wanted;
+            const match = models.find(m => m.toLowerCase() === wanted.toLowerCase());
+            return match || wanted;
+        }
+
+        function populateModelSelect(models, selectedModel = '') {
+            const select = document.getElementById('aiModelSelect');
+            const custom = document.getElementById('aiModelCustom');
+            const resolved = resolveModelSelection(selectedModel, models);
+            select.innerHTML = '';
+
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = '— Select a model —';
+            select.appendChild(placeholder);
+
+            models.forEach(model => {
+                const opt = document.createElement('option');
+                opt.value = model;
+                opt.textContent = model;
+                if (model === resolved) opt.selected = true;
+                select.appendChild(opt);
+            });
+
+            const useCustom = resolved && !models.includes(resolved);
+            const customOpt = document.createElement('option');
+            customOpt.value = '__custom__';
+            customOpt.textContent = 'Other (manual entry)';
+            if (useCustom) customOpt.selected = true;
+            select.appendChild(customOpt);
+
+            if (useCustom) {
+                custom.classList.remove('hidden');
+                custom.value = resolved;
+            } else {
+                custom.classList.add('hidden');
+                custom.value = '';
+            }
+        }
+
+        function onModelSelectChange() {
+            const select = document.getElementById('aiModelSelect');
+            const custom = document.getElementById('aiModelCustom');
+            if (select.value === '__custom__') {
+                custom.classList.remove('hidden');
+                custom.focus();
+            } else {
+                custom.classList.add('hidden');
+            }
+            markSettingsDirty();
+        }
+
+        function scheduleFetchAiModels() {
+            clearTimeout(fetchModelsTimer);
+            fetchModelsTimer = setTimeout(() => fetchAiModels(getSelectedModel()), 400);
+        }
+
+        async function fetchAiModels(preselect = '') {
+            const baseUrl = document.getElementById('aiBaseUrl').value.trim();
+            if (!baseUrl) {
+                setAiModelsStatus('Enter a Base URL first.', false);
+                return;
+            }
+
+            const btn = document.getElementById('fetchModelsBtn');
+            const select = document.getElementById('aiModelSelect');
+            const preferred = (preselect || getSelectedModel() || settingsCache?.ai?.model || '').trim();
+
+            btn.disabled = true;
+            select.disabled = true;
+            setAiModelsStatus('Loading models from provider...', null);
+
+            const payload = collectSettingsFromForm();
+            const res = await fetch('/api/settings/ai-models', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+            const data = await res.json();
+
+            btn.disabled = false;
+            select.disabled = false;
+
+            if (!res.ok) {
+                populateModelSelect([], preferred);
+                setAiModelsStatus(data.error || 'Failed to load models.', false);
+                return;
+            }
+
+            const models = data.models || [];
+            const pick = resolveModelSelection(preferred, models) || models[0] || '';
+            populateModelSelect(models, pick);
+            setAiModelsStatus(`${models.length} model(s) available.`, true);
+        }
+
+        function setAiModelsStatus(message, ok) {
+            const el = document.getElementById('aiModelsStatus');
+            el.textContent = message;
+            el.classList.remove('text-green-400', 'text-red-400', 'text-slate-600');
+            if (ok === true) el.classList.add('text-green-400');
+            else if (ok === false) el.classList.add('text-red-400');
+            else el.classList.add('text-slate-600');
+        }
+
+        function collectSettingsFromForm() {
+            return {
+                proxy: {
+                    enabled: document.getElementById('proxyEnabled').checked,
+                    url: document.getElementById('proxyUrl').value.trim(),
+                },
+                ai: {
+                    enabled: document.getElementById('aiEnabled').checked,
+                    provider: document.getElementById('aiProvider').value,
+                    base_url: document.getElementById('aiBaseUrl').value.trim(),
+                    api_key: document.getElementById('aiApiKey').value,
+                    model: getSelectedModel(),
+                    auto_analyze: document.getElementById('aiAutoAnalyze').checked,
+                    system_prompt: document.getElementById('aiSystemPrompt').value,
+                },
+                scan: {
+                    injection: {
+                        enabled: document.getElementById('injEnabled').checked,
+                        max_forms: parseInt(document.getElementById('injMaxForms').value, 10) || 8,
+                        test_sql: document.getElementById('injTestSql').checked,
+                        test_xss: document.getElementById('injTestXss').checked,
+                    },
+                    dynamic_analysis: {
+                        enabled: document.getElementById('dynEnabled').checked,
+                        max_probes: parseInt(document.getElementById('dynMaxProbes').value, 10) || 15,
+                        delay_seconds: parseFloat(document.getElementById('dynDelay').value) || 0.5,
+                        min_severity: document.getElementById('dynMinSeverity').value,
+                        test_rce: document.getElementById('dynTestRce').checked,
+                        test_sqli: document.getElementById('dynTestSqli').checked,
+                    },
+                    vuln_lookup: {
+                        enabled: document.getElementById('vulnLookupEnabled').checked,
+                        wordfence_api_key: document.getElementById('wordfenceApiKey').value,
+                        wpscan_api_token: document.getElementById('wpscanApiToken').value,
+                    },
+                },
+            };
+        }
+
+        function markSettingsDirty() {
+            settingsDirty = true;
+            document.getElementById('settingsStatus').textContent = 'Unsaved changes';
+        }
+
+        function onProviderChange(markDirty = true, refetchModels = true) {
+            const provider = document.getElementById('aiProvider').value;
+            const preset = providerPresets[provider] || {};
+            const baseInput = document.getElementById('aiBaseUrl');
+            const keyHint = document.getElementById('apiKeyHint');
+
+            if (provider === 'ollama') {
+                keyHint.textContent = '(optional for local Ollama)';
+            } else {
+                keyHint.textContent = '(required)';
+            }
+
+            if (preset.base_url && (!baseInput.value || Object.values(providerPresets).some(p => p.base_url === baseInput.value))) {
+                baseInput.value = preset.base_url;
+            }
+            if (markDirty) markSettingsDirty();
+            if (refetchModels) scheduleFetchAiModels();
+        }
+
+        function resetSystemPrompt() {
+            document.getElementById('aiSystemPrompt').value = defaultSystemPrompt;
+            markSettingsDirty();
+        }
+
+        async function refreshWordfenceStatus() {
+            const statusEl = document.getElementById('wordfenceCacheStatus');
+            const btn = document.getElementById('wordfenceUpdateBtn');
+            if (!statusEl) return;
+            try {
+                const data = await fetchJson('/api/wordfence/status');
+                if (data.ready) {
+                    statusEl.textContent = `Ready — ${Number(data.record_count || 0).toLocaleString()} vulnerabilities, ${Number(data.component_count || 0).toLocaleString()} components${data.updated_label ? ` · updated ${data.updated_label}` : ''}`;
+                    statusEl.className = 'text-[11px] text-green-400 mt-1';
+                } else {
+                    statusEl.textContent = 'Not downloaded yet — save your API key and click Update Database.';
+                    statusEl.className = 'text-[11px] text-amber-400 mt-1';
+                }
+                if (btn) btn.disabled = false;
+            } catch (e) {
+                statusEl.textContent = `Could not load Wordfence status: ${e.message}`;
+                statusEl.className = 'text-[11px] text-red-400 mt-1';
+            }
+        }
+
+        async function updateWordfenceDatabase() {
+            const btn = document.getElementById('wordfenceUpdateBtn');
+            const statusEl = document.getElementById('wordfenceCacheStatus');
+            if (settingsDirty) {
+                statusEl.textContent = 'Save settings first so your Wordfence API key is stored.';
+                statusEl.className = 'text-[11px] text-amber-400 mt-1';
+                return;
+            }
+
+            btn.disabled = true;
+            statusEl.textContent = 'Starting Wordfence download (about 140 MB, may take a few minutes)...';
+            statusEl.className = 'text-[11px] text-slate-400 mt-1';
+
+            try {
+                const data = await fetchJson('/api/wordfence/update', { method: 'POST' });
+                statusEl.textContent = 'Download in progress... this page will refresh status automatically.';
+                const poll = setInterval(async () => {
+                    await refreshWordfenceStatus();
+                    const text = document.getElementById('wordfenceCacheStatus')?.textContent || '';
+                    if (text.startsWith('Ready')) {
+                        clearInterval(poll);
+                        btn.disabled = false;
+                    }
+                }, 5000);
+                setTimeout(() => {
+                    clearInterval(poll);
+                    btn.disabled = false;
+                }, 20 * 60 * 1000);
+            } catch (e) {
+                statusEl.textContent = `Update failed: ${e.message || e}`;
+                statusEl.className = 'text-[11px] text-red-400 mt-1';
+                btn.disabled = false;
+            }
+        }
+
+        async function saveSettings() {
+            const btn = document.getElementById('saveSettingsBtn');
+            const statusEl = document.getElementById('settingsStatus');
+            btn.disabled = true;
+            try {
+                const payload = collectSettingsFromForm();
+                settingsCache = await fetchJson('/api/settings', {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                applySettingsToForm(settingsCache);
+                settingsDirty = false;
+                statusEl.textContent = 'Settings saved';
+                setTimeout(() => {
+                    if (!settingsDirty) statusEl.textContent = '';
+                }, 3000);
+            } catch (e) {
+                statusEl.textContent = `Save failed: ${e.message}`;
+            } finally {
+                btn.disabled = false;
+            }
+        }
+
+        function showTestResult(elId, ok, message) {
+            const el = document.getElementById(elId);
+            el.classList.remove('hidden', 'bg-green-500/10', 'text-green-400', 'bg-red-500/10', 'text-red-400', 'bg-slate-800/40', 'text-slate-400');
+            if (ok === null) {
+                el.classList.add('bg-slate-800/40', 'text-slate-400');
+                el.innerHTML = `<i class="fas fa-spinner fa-spin mr-1"></i> ${esc(message)}`;
+                return;
+            }
+            el.classList.add(ok ? 'bg-green-500/10' : 'bg-red-500/10');
+            el.classList.add(ok ? 'text-green-400' : 'text-red-400');
+            el.innerHTML = `<i class="fas fa-${ok ? 'check-circle' : 'times-circle'} mr-1"></i> ${esc(message)}`;
+        }
+
+        async function testProxy() {
+            const btn = document.getElementById('testProxyBtn');
+            btn.disabled = true;
+            const url = document.getElementById('proxyUrl').value.trim();
+            const res = await fetch('/api/settings/test-proxy', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ url }),
+            });
+            const data = await res.json();
+            showTestResult('proxyTestResult', res.ok, res.ok ? data.message : data.error);
+            btn.disabled = false;
+        }
+
+        async function testAi() {
+            const btn = document.getElementById('testAiBtn');
+            btn.disabled = true;
+            showTestResult('aiTestResult', null, 'Testing AI connection...');
+            try {
+                const payload = collectSettingsFromForm();
+                const res = await fetch('/api/settings/test-ai', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                    signal: AbortSignal.timeout(35000),
+                });
+                const data = await res.json();
+                showTestResult('aiTestResult', res.ok, res.ok ? data.message : data.error);
+            } catch (e) {
+                const msg = e.name === 'TimeoutError'
+                    ? 'Connection test timed out. Check Base URL, model, and provider.'
+                    : `Connection test failed: ${e.message}`;
+                showTestResult('aiTestResult', false, msg);
+            }
+            btn.disabled = false;
+        }
+
+        // ── AI Analysis ───────────────────────────────────────────
+
+        function isThinkingModelName(model) {
+            const low = (model || '').toLowerCase();
+            return ['think', 'r1', 'qwq', 'qwen3', 'deepseek', 'o1', 'o3', 'reason'].some(h => low.includes(h));
+        }
+
+        function renderAiThinkingMarkup(thinkingMode) {
+            const title = thinkingMode
+                ? 'Model is thinking...'
+                : 'AI is analyzing scan results...';
+            const subtitle = thinkingMode
+                ? 'Reasoning streams below; the security report follows as it is generated.'
+                : 'The security assessment is streaming in real time.';
+            return `
+                <div class="ai-thinking-box">
+                    <div class="ai-thinking-header">
+                        <i class="fas fa-brain ${thinkingMode ? 'fa-beat-fade' : 'fa-spin'}"></i>
+                        <span id="aiStreamStatusLabel">${title}</span>
+                        <span class="ai-thinking-dots"><span></span><span></span><span></span></span>
+                    </div>
+                    <p class="text-xs text-slate-500">${subtitle}</p>
+                    <div id="aiThinkingPreview" class="ai-thinking-preview hidden"></div>
+                    <div id="aiContentStream" class="ai-stream-preview hidden"></div>
+                    <p id="aiThinkingTimer" class="ai-thinking-timer">Elapsed: 0s</p>
+                </div>`;
+        }
+
+        function clearAiAnalysisWatchdog() {
+            if (aiAnalysisWatchdog) {
+                clearTimeout(aiAnalysisWatchdog);
+                aiAnalysisWatchdog = null;
+            }
+        }
+
+        function showAiAnalysisError(message) {
+            clearAiAnalysisWatchdog();
+            resetAiStreamState();
+            switchResultTab('ai');
+            document.getElementById('aiEmptyState').classList.add('hidden');
+            document.getElementById('aiAnalysisContent').innerHTML =
+                `<div class="text-red-400 py-4"><i class="fas fa-exclamation-triangle mr-2"></i>${esc(message)}</div>`;
+            document.getElementById('aiRetryBtn').classList.remove('hidden');
+        }
+
+        function clearAiAnalysisPanel() {
+            document.getElementById('aiAnalysisContent').innerHTML = '';
+            lastAiAnalysis = null;
+            updateAiExportButtons();
+            document.getElementById('aiRetryBtn').classList.add('hidden');
+            document.getElementById('aiStartBtn')?.classList.add('hidden');
+        }
+
+        function startAiThinkingUI(thinkingMode = true) {
+            aiAnalyzing = true;
+            aiThinkingBuffer = '';
+            aiContentBuffer = '';
+            aiThinkingStartedAt = Date.now();
+            switchResultTab('ai');
+            document.getElementById('aiEmptyState').classList.add('hidden');
+            document.getElementById('aiAnalysisContent').innerHTML = renderAiThinkingMarkup(thinkingMode);
+            clearInterval(aiThinkingTimer);
+            aiThinkingTimer = setInterval(() => {
+                const el = document.getElementById('aiThinkingTimer');
+                if (!el) return;
+                const secs = Math.floor((Date.now() - aiThinkingStartedAt) / 1000);
+                el.textContent = `Elapsed: ${secs}s`;
+            }, 1000);
+        }
+
+        function scheduleAiThinkingRender() {
+            if (aiThinkingRenderTimer) return;
+            aiThinkingRenderTimer = setTimeout(() => {
+                aiThinkingRenderTimer = null;
+                flushAiThinkingRender();
+            }, 100);
+        }
+
+        function flushAiThinkingRender() {
+            const preview = document.getElementById('aiThinkingPreview');
+            if (!preview || !aiThinkingBuffer) return;
+            preview.classList.remove('hidden');
+            const tail = aiThinkingBuffer.slice(-400);
+            preview.textContent = tail;
+            applyAiTextDirection(aiThinkingBuffer);
+            preview.scrollTop = preview.scrollHeight;
+        }
+
+        function scheduleAiContentRender() {
+            if (aiContentRenderTimer) return;
+            aiContentRenderTimer = setTimeout(() => {
+                aiContentRenderTimer = null;
+                flushAiContentRender();
+            }, 100);
+        }
+
+        function flushAiContentRender() {
+            const stream = document.getElementById('aiContentStream');
+            if (!stream || !aiContentBuffer) return;
+            stream.classList.remove('hidden');
+            stream.innerHTML = renderMarkdown(aiContentBuffer) + '<span class="ai-stream-cursor">▌</span>';
+            applyAiTextDirection(aiContentBuffer);
+            stream.scrollTop = stream.scrollHeight;
+
+            const headerLabel = document.getElementById('aiStreamStatusLabel');
+            if (headerLabel) {
+                headerLabel.textContent = 'Generating security report...';
+            }
+            const dots = document.querySelector('#aiAnalysisContent .ai-thinking-dots');
+            if (dots) dots.classList.add('hidden');
+        }
+
+        function updateAiThinkingPreview() {
+            scheduleAiThinkingRender();
+        }
+
+        function updateAiContentStream() {
+            scheduleAiContentRender();
+        }
+
+        function stopAiThinkingUI() {
+            aiAnalyzing = false;
+            clearInterval(aiThinkingTimer);
+            aiThinkingTimer = null;
+            if (aiContentRenderTimer) {
+                clearTimeout(aiContentRenderTimer);
+                aiContentRenderTimer = null;
+            }
+            if (aiThinkingRenderTimer) {
+                clearTimeout(aiThinkingRenderTimer);
+                aiThinkingRenderTimer = null;
+            }
+        }
+
+        function resetAiStreamState() {
+            stopAiThinkingUI();
+            aiStreamInitialized = false;
+            aiThinkingBuffer = '';
+            aiContentBuffer = '';
+        }
+
+        function isAiEnabled() {
+            const checkbox = document.getElementById('aiEnabled');
+            if (checkbox) return checkbox.checked;
+            return !!settingsCache?.ai?.enabled;
+        }
+
+        function updateAiPanelVisibility() {
+            updateAiEmptyState();
+            if (isAiEnabled()) {
+                document.getElementById('aiRetryBtn').classList.remove('hidden');
+            }
+        }
+
+        function updateAiEmptyState() {
+            const empty = document.getElementById('aiEmptyState');
+            const content = document.getElementById('aiAnalysisContent');
+            const aiEnabled = isAiEnabled();
+            const hasContent = content && content.innerHTML.trim().length > 0;
+            if (!aiEnabled && !hasContent && !aiAnalyzing) {
+                empty.classList.remove('hidden');
+                document.getElementById('aiStartBtn')?.classList.add('hidden');
+            } else if (aiEnabled && !hasContent && !aiAnalyzing) {
+                empty.classList.remove('hidden');
+                document.getElementById('aiStartBtn')?.classList.remove('hidden');
+            } else {
+                empty.classList.add('hidden');
+            }
+        }
+
+        function showAiPanel() {
+            switchResultTab('ai');
+        }
+
+        async function requestAiAnalysis() {
+            if (!lastResults || aiAnalyzing) return;
+
+            const form = collectSettingsFromForm();
+            if (!form.ai.enabled) {
+                switchResultTab('ai');
+                document.getElementById('aiEmptyState').classList.add('hidden');
+                document.getElementById('aiAnalysisContent').innerHTML =
+                    '<div class="text-yellow-400 py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Enable AI in Settings first.</div>';
+                return;
+            }
+            if (!form.ai.model) {
+                switchResultTab('ai');
+                document.getElementById('aiEmptyState').classList.add('hidden');
+                document.getElementById('aiAnalysisContent').innerHTML =
+                    '<div class="text-yellow-400 py-4"><i class="fas fa-exclamation-triangle mr-2"></i>Select an AI model in Settings first.</div>';
+                return;
+            }
+            if (!socket.connected || !socket.id) {
+                showAiAnalysisError('Not connected to server. Refresh the page and try again.');
+                return;
+            }
+
+            document.getElementById('aiRetryBtn').classList.add('hidden');
+            aiStreamInitialized = false;
+            aiThinkingBuffer = '';
+            aiContentBuffer = '';
+            aiAnalyzing = true;
+            switchResultTab('ai');
+            document.getElementById('aiEmptyState').classList.add('hidden');
+            document.getElementById('aiAnalysisContent').innerHTML =
+                '<div class="text-slate-400 py-4 text-center"><i class="fas fa-spinner fa-spin mr-2"></i>Starting AI analysis...</div>';
+
+            try {
+                const res = await fetch('/api/analyze', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        results: lastResults,
+                        ai: form.ai,
+                        sid: socket.id,
+                    }),
+                    signal: AbortSignal.timeout(30000),
+                });
+                const data = await res.json();
+                if (!res.ok) {
+                    showAiAnalysisError(data.error || 'Failed to start AI analysis.');
+                    return;
+                }
+            } catch (e) {
+                const msg = e.name === 'TimeoutError'
+                    ? 'Server did not respond. Check that the app is running.'
+                    : `Failed to start AI analysis: ${e.message}`;
+                showAiAnalysisError(msg);
+            }
+        }
+
+        function updateAiExportButtons() {
+            const hasAi = Boolean(lastAiAnalysis?.analysis);
+            ['aiExportEnBtn', 'aiExportFaBtn'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.classList.toggle('hidden', !hasAi);
+            });
+        }
+
+        function renderAiAnalysis(data) {
+            lastAiAnalysis = data;
+            updateAiExportButtons();
+            showAiPanel();
+            document.getElementById('aiEmptyState').classList.add('hidden');
+            const analysis = fixUtf8Mojibake(data.analysis || '');
+            const thinking = fixUtf8Mojibake(data.thinking || '');
+            let thinkingBlock = '';
+            if (thinking) {
+                const preview = thinking.length > 800
+                    ? '…' + thinking.slice(-800)
+                    : thinking;
+                thinkingBlock = `
+                    <details class="ai-thinking-box mb-4">
+                        <summary class="ai-thinking-header cursor-pointer select-none">
+                            <i class="fas fa-brain text-cyan-400"></i>
+                            <span>Model reasoning (${thinking.length.toLocaleString()} chars)</span>
+                        </summary>
+                        <pre class="ai-thinking-preview max-h-48 mt-2">${esc(preview)}</pre>
+                    </details>`;
+            }
+            const meta = `<p class="text-[10px] text-slate-600 mb-3 uppercase font-bold">Model: ${esc(data.model)} · Provider: ${esc(data.provider)}${data.streaming ? ' · Streaming' : ''}${data.thinking_mode ? ' · Thinking mode' : ''}</p>`;
+            document.getElementById('aiAnalysisContent').innerHTML = meta + thinkingBlock + renderMarkdown(analysis);
+            applyAiTextDirection(analysis + thinking);
+            document.getElementById('aiRetryBtn').classList.remove('hidden');
+        }
+
+        function renderMarkdown(text) {
+            if (!text) return '';
+            let html = esc(text);
+            html = html.replace(/^### (.+)$/gm, '<h3>$1</h3>');
+            html = html.replace(/^## (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/^# (.+)$/gm, '<h2>$1</h2>');
+            html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+            html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+            html = html.replace(/^- (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/(<li>.*<\/li>\n?)+/g, m => `<ul>${m}</ul>`);
+            html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+            html = html.replace(/\n\n/g, '</p><p>');
+            html = `<p>${html}</p>`;
+            html = html.replace(/<p><h/g, '<h').replace(/<\/h2><\/p>/g, '</h2>').replace(/<p><h3/g, '<h3').replace(/<\/h3><\/p>/g, '</h3>');
+            html = html.replace(/<p><ul>/g, '<ul>').replace(/<\/ul><\/p>/g, '</ul>');
+            html = html.replace(/<p><\/p>/g, '');
+            return html;
+        }
+    </script>
+</body>
+</html>

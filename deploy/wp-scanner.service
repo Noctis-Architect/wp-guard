@@ -1,0 +1,35 @@
+[Unit]
+Description=WordPress Scanner (Flask + SocketIO)
+Documentation=file:///home/mr-noctis/projects/wp_scanner
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mr-noctis
+Group=mr-noctis
+WorkingDirectory=/home/mr-noctis/projects/wp_scanner
+
+# Defaults; override in .env (WP_SCANNER_SECRET, WP_SCANNER_PORT)
+Environment=WP_SCANNER_PORT=5000
+EnvironmentFile=-/home/mr-noctis/projects/wp_scanner/.env
+
+ExecStart=/home/mr-noctis/projects/wp_scanner/venv/bin/gunicorn \
+    --worker-class eventlet \
+    -w 1 \
+    --bind 127.0.0.1:5001 \
+    --timeout 120 \
+    --access-logfile - \
+    --error-logfile - \
+    app:app
+
+Restart=always
+RestartSec=5
+KillMode=mixed
+TimeoutStopSec=30
+
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

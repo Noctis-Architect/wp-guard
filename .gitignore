@@ -1,0 +1,43 @@
+# Secrets
+.env
+.env.local
+.env.*.local
+
+# Python
+venv/
+.venv/
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+*.egg-info/
+dist/
+*.egg
+
+# Runtime data (SQLite + downloaded caches)
+database/*
+!database/.gitkeep
+*.db
+*.db-wal
+*.db-shm
+
+# Logs
+*.log
+app.log
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Windows build artifacts (built locally or in GitHub Actions)
+build/windows/build/
+build/windows/dist/
+build/windows/.win-python/
+build/windows/.venv-build/
+
+# Local release bundles (published via GitHub Releases)
+release/
