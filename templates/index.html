@@ -12,33 +12,174 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Outfit:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg-void: #07090e;
-            --bg-panel: rgba(14, 20, 32, 0.88);
-            --bg-panel-hover: rgba(20, 28, 45, 0.94);
-            --border-subtle: rgba(255, 255, 255, 0.1);
-            --border-glow: rgba(0, 240, 255, 0.4);
-            --accent-cyan: #00f0ff;
-            --accent-blue: #38bdf8;
-            --accent-purple: #a855f7;
-            --accent-rose: #f43f5e;
-            --accent-emerald: #10b981;
-            --accent-amber: #f59e0b;
+        /* ======================================================== */
+        /* MULTI-THEME CONFIGURATION                                */
+        /* ======================================================== */
+
+        /* 1. MINIMAL SLATE (Default - Clean, Monochromatic, Serious) */
+        :root, html[data-theme="minimal"] {
+            --bg-void: #090b10;
+            --bg-panel: rgba(17, 21, 30, 0.95);
+            --bg-panel-hover: rgba(23, 29, 41, 0.98);
+            --bg-card: #0f131a;
+            --border-subtle: rgba(255, 255, 255, 0.08);
+            --border-active: #475569;
+            --accent-primary: #38bdf8;
+            --accent-primary-text: #f8fafc;
+            --accent-primary-bg: rgba(255, 255, 255, 0.05);
+            --accent-primary-border: rgba(255, 255, 255, 0.12);
+            --btn-primary-bg: #0284c7;
+            --btn-primary-hover: #0369a1;
+            --btn-primary-border: #38bdf8;
+            --btn-primary-shadow: rgba(2, 132, 199, 0.25);
+            --btn-primary-text: #ffffff;
+            --chip-bg: #141923;
+            --chip-border: #242c3d;
+            --chip-text: #e2e8f0;
+            --chip-icon: #94a3b8;
+            --radar-ring: rgba(148, 163, 184, 0.15);
+            --radar-sweep: conic-gradient(from 0deg, transparent 75%, rgba(148, 163, 184, 0.2) 100%);
+            --radar-dot: #94a3b8;
+            --nav-active-bg: rgba(255, 255, 255, 0.08);
+            --nav-active-border: #64748b;
+            --nav-active-text: #ffffff;
+            --hud-val-color: #ffffff;
+        }
+
+        /* 2. CYBER CYAN */
+        html[data-theme="cyber"] {
+            --bg-void: #06090e;
+            --bg-panel: rgba(11, 17, 28, 0.92);
+            --bg-panel-hover: rgba(16, 24, 40, 0.95);
+            --bg-card: #080d16;
+            --border-subtle: rgba(56, 189, 248, 0.18);
+            --border-active: rgba(0, 240, 255, 0.5);
+            --accent-primary: #00f0ff;
+            --accent-primary-text: #00f0ff;
+            --accent-primary-bg: rgba(0, 240, 255, 0.12);
+            --accent-primary-border: rgba(0, 240, 255, 0.4);
+            --btn-primary-bg: #0891b2;
+            --btn-primary-hover: #06b6d4;
+            --btn-primary-border: #22d3ee;
+            --btn-primary-shadow: rgba(8, 145, 178, 0.35);
+            --btn-primary-text: #ffffff;
+            --chip-bg: rgba(8, 145, 178, 0.12);
+            --chip-border: rgba(6, 182, 212, 0.3);
+            --chip-text: #cffafe;
+            --chip-icon: #22d3ee;
+            --radar-ring: rgba(0, 240, 255, 0.2);
+            --radar-sweep: conic-gradient(from 0deg, transparent 70%, rgba(0, 240, 255, 0.3) 100%);
+            --radar-dot: #00f0ff;
+            --nav-active-bg: rgba(14, 165, 233, 0.22);
+            --nav-active-border: rgba(56, 189, 248, 0.6);
+            --nav-active-text: #38bdf8;
+            --hud-val-color: #38bdf8;
+        }
+
+        /* 3. MIDNIGHT NAVY */
+        html[data-theme="navy"] {
+            --bg-void: #050a14;
+            --bg-panel: rgba(10, 20, 38, 0.94);
+            --bg-panel-hover: rgba(15, 28, 52, 0.96);
+            --bg-card: #081120;
+            --border-subtle: rgba(59, 130, 246, 0.2);
+            --border-active: rgba(96, 165, 250, 0.5);
+            --accent-primary: #60a5fa;
+            --accent-primary-text: #93c5fd;
+            --accent-primary-bg: rgba(59, 130, 246, 0.12);
+            --accent-primary-border: rgba(59, 130, 246, 0.35);
+            --btn-primary-bg: #2563eb;
+            --btn-primary-hover: #1d4ed8;
+            --btn-primary-border: #60a5fa;
+            --btn-primary-shadow: rgba(37, 99, 235, 0.35);
+            --btn-primary-text: #ffffff;
+            --chip-bg: rgba(37, 99, 235, 0.12);
+            --chip-border: rgba(59, 130, 246, 0.28);
+            --chip-text: #dbeafe;
+            --chip-icon: #60a5fa;
+            --radar-ring: rgba(59, 130, 246, 0.2);
+            --radar-sweep: conic-gradient(from 0deg, transparent 70%, rgba(59, 130, 246, 0.3) 100%);
+            --radar-dot: #60a5fa;
+            --nav-active-bg: rgba(37, 99, 235, 0.25);
+            --nav-active-border: rgba(96, 165, 250, 0.6);
+            --nav-active-text: #93c5fd;
+            --hud-val-color: #93c5fd;
+        }
+
+        /* 4. TERMINAL MATRIX */
+        html[data-theme="matrix"] {
+            --bg-void: #030805;
+            --bg-panel: rgba(6, 17, 10, 0.94);
+            --bg-panel-hover: rgba(9, 26, 15, 0.96);
+            --bg-card: #040c07;
+            --border-subtle: rgba(16, 185, 129, 0.2);
+            --border-active: rgba(52, 211, 153, 0.5);
+            --accent-primary: #10b981;
+            --accent-primary-text: #34d399;
+            --accent-primary-bg: rgba(16, 185, 129, 0.12);
+            --accent-primary-border: rgba(16, 185, 129, 0.35);
+            --btn-primary-bg: #059669;
+            --btn-primary-hover: #047857;
+            --btn-primary-border: #34d399;
+            --btn-primary-shadow: rgba(16, 185, 129, 0.35);
+            --btn-primary-text: #ffffff;
+            --chip-bg: rgba(16, 185, 129, 0.1);
+            --chip-border: rgba(16, 185, 129, 0.28);
+            --chip-text: #d1fae5;
+            --chip-icon: #34d399;
+            --radar-ring: rgba(16, 185, 129, 0.2);
+            --radar-sweep: conic-gradient(from 0deg, transparent 70%, rgba(16, 185, 129, 0.3) 100%);
+            --radar-dot: #10b981;
+            --nav-active-bg: rgba(16, 185, 129, 0.22);
+            --nav-active-border: rgba(52, 211, 153, 0.6);
+            --nav-active-text: #34d399;
+            --hud-val-color: #34d399;
         }
 
         body {
             font-family: 'Outfit', 'Vazirmatn', -apple-system, sans-serif;
             background-color: var(--bg-void);
             color: #f1f5f9;
+            min-height: 100vh;
+            transition: background-color 0.25s ease, color 0.25s ease;
+        }
+
+        html[data-theme="minimal"] body {
+            background-color: #090b10;
             background-image: 
-                radial-gradient(ellipse 80% 45% at 50% -15%, rgba(14, 165, 233, 0.15), transparent),
-                radial-gradient(ellipse 60% 35% at 90% 20%, rgba(168, 85, 247, 0.08), transparent),
-                radial-gradient(ellipse 50% 30% at 10% 80%, rgba(16, 185, 129, 0.06), transparent),
                 linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
                 linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
-            background-size: 100% 100%, 100% 100%, 100% 100%, 28px 28px, 28px 28px;
+            background-size: 24px 24px;
+        }
+
+        html[data-theme="cyber"] body {
+            background-color: #06090e;
+            background-image: 
+                radial-gradient(ellipse 80% 40% at 50% -10%, rgba(6, 182, 212, 0.16), transparent),
+                linear-gradient(rgba(0, 240, 255, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 240, 255, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px, 28px 28px;
             background-attachment: fixed;
-            min-height: 100vh;
+        }
+
+        html[data-theme="navy"] body {
+            background-color: #050a14;
+            background-image: 
+                radial-gradient(ellipse 70% 40% at 50% -10%, rgba(37, 99, 235, 0.16), transparent),
+                linear-gradient(rgba(59, 130, 246, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(59, 130, 246, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px, 28px 28px;
+            background-attachment: fixed;
+        }
+
+        html[data-theme="matrix"] body {
+            background-color: #030805;
+            background-image: 
+                radial-gradient(ellipse 70% 40% at 50% -10%, rgba(16, 185, 129, 0.14), transparent),
+                linear-gradient(rgba(16, 185, 129, 0.02) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16, 185, 129, 0.02) 1px, transparent 1px);
+            background-size: 100% 100%, 28px 28px, 28px 28px;
+            background-attachment: fixed;
         }
 
         html[dir="rtl"] body {
@@ -61,8 +202,21 @@
             transition: all 0.2s ease;
         }
         .cyber-card:hover {
-            border-color: rgba(56, 189, 248, 0.4);
-            box-shadow: 0 6px 20px -5px rgba(56, 189, 248, 0.2);
+            border-color: var(--border-active);
+            box-shadow: 0 6px 20px -5px rgba(0, 0, 0, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Primary Action Button */
+        .btn-primary {
+            background: var(--btn-primary-bg) !important;
+            color: var(--btn-primary-text) !important;
+            box-shadow: 0 4px 14px -2px var(--btn-primary-shadow) !important;
+            border: 1px solid var(--btn-primary-border) !important;
+            transition: all 0.2s ease;
+        }
+        .btn-primary:hover {
+            background: var(--btn-primary-hover) !important;
             transform: translateY(-1px);
         }
 
@@ -72,10 +226,9 @@
             transition: all 0.2s ease;
         }
         .nav-tab-btn.active {
-            background: rgba(14, 165, 233, 0.22);
-            border-color: rgba(56, 189, 248, 0.6);
-            color: #38bdf8;
-            box-shadow: 0 0 12px -2px rgba(56, 189, 248, 0.35);
+            background: var(--nav-active-bg);
+            border-color: var(--nav-active-border);
+            color: var(--nav-active-text);
         }
 
         /* Activity Terminal */
@@ -169,23 +322,23 @@
             width: 180px;
             height: 180px;
             border-radius: 50%;
-            border: 1px solid rgba(0, 240, 255, 0.25);
-            background: radial-gradient(circle, rgba(0, 240, 255, 0.07) 0%, rgba(7, 9, 14, 0.9) 75%);
+            border: 1px solid var(--radar-ring);
+            background: radial-gradient(circle, var(--radar-ring) 0%, var(--bg-void) 75%);
             display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 0 28px -4px rgba(0, 240, 255, 0.18);
+            box-shadow: 0 0 24px -4px var(--radar-ring);
         }
         .radar-ring {
             position: absolute;
             border-radius: 50%;
-            border: 1px dashed rgba(0, 240, 255, 0.22);
+            border: 1px dashed var(--radar-ring);
         }
         .radar-sweep {
             position: absolute;
             inset: 0;
             border-radius: 50%;
-            background: conic-gradient(from 0deg, transparent 70%, rgba(0, 240, 255, 0.3) 100%);
+            background: var(--radar-sweep);
             animation: radar-sweep-anim 3.5s linear infinite;
         }
         @keyframes radar-sweep-anim {
@@ -196,9 +349,9 @@
             position: absolute;
             width: 8px;
             height: 8px;
-            background: #00f0ff;
+            background: var(--radar-dot);
             border-radius: 50%;
-            box-shadow: 0 0 10px #00f0ff;
+            box-shadow: 0 0 10px var(--radar-dot);
             animation: radar-ping-anim 2s infinite ease-out;
         }
         @keyframes radar-ping-anim {
@@ -223,9 +376,9 @@
         }
         .result-tab:hover { color: #f8fafc; }
         .result-tab.active {
-            color: #38bdf8;
-            border-bottom-color: #38bdf8;
-            background: linear-gradient(180deg, transparent, rgba(56, 189, 248, 0.08));
+            color: var(--accent-primary);
+            border-bottom-color: var(--accent-primary);
+            background: linear-gradient(180deg, transparent, var(--accent-primary-bg));
         }
         .result-tab .tab-count {
             display: inline-flex;
@@ -243,9 +396,9 @@
             font-weight: 700;
         }
         .result-tab.active .tab-count {
-            background: rgba(14, 165, 233, 0.3);
-            color: #38bdf8;
-            border-color: rgba(56, 189, 248, 0.5);
+            background: var(--accent-primary-bg);
+            color: var(--accent-primary);
+            border-color: var(--accent-primary-border);
         }
 
         .result-panel { display: none; }
@@ -300,6 +453,23 @@
             border: 1px solid transparent;
             transition: all 0.15s;
             font-weight: 600;
+        }
+        .theme-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            padding: 0.3rem 0.65rem;
+            border-radius: 0.55rem;
+            font-size: 0.75rem;
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            background: var(--chip-bg);
+            border: 1px solid var(--chip-border);
+            color: var(--chip-text);
+            transition: all 0.15s;
+        }
+        .theme-chip i {
+            color: var(--chip-icon);
         }
 
         /* Severity Bar & Legend */
@@ -441,17 +611,262 @@
             100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(16, 185, 129, 0); }
         }
 
-        /* Compliance banner */
-        .compliance-banner {
-            background: linear-gradient(90deg, rgba(245, 158, 11, 0.12) 0%, rgba(15, 23, 42, 0.75) 100%);
-            border-left: 3px solid #f59e0b;
-            border-top: 1px solid rgba(245, 158, 11, 0.25);
-            border-right: 1px solid rgba(255, 255, 255, 0.08);
-            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        /* ======================================================== */
+        /* MINIMAL THEME OVERRIDES (Flat, Crisp, No Fluff, No Glow) */
+        /* ======================================================== */
+
+        /* 1. Flat, Crisp Borders (No Rounded-2xl / Bubbly Corners) */
+        html[data-theme="minimal"] .rounded-3xl,
+        html[data-theme="minimal"] .rounded-2xl,
+        html[data-theme="minimal"] .rounded-xl,
+        html[data-theme="minimal"] .glass-panel,
+        html[data-theme="minimal"] .cyber-card {
+            border-radius: 6px !important;
         }
-        html[dir="rtl"] .compliance-banner {
-            border-left: 1px solid rgba(255, 255, 255, 0.08);
-            border-right: 3px solid #f59e0b;
+
+        html[data-theme="minimal"] .rounded-lg,
+        html[data-theme="minimal"] .rounded-md,
+        html[data-theme="minimal"] input,
+        html[data-theme="minimal"] button,
+        html[data-theme="minimal"] select,
+        html[data-theme="minimal"] textarea,
+        html[data-theme="minimal"] .compliance-banner,
+        html[data-theme="minimal"] #langModal .glass-panel {
+            border-radius: 4px !important;
+        }
+
+        html[data-theme="minimal"] .rounded-full:not(.nav-dot):not(.w-2\.5):not(.w-1\.5):not(.w-2) {
+            border-radius: 4px !important;
+        }
+
+        html[data-theme="minimal"] .chip,
+        html[data-theme="minimal"] .theme-chip {
+            border-radius: 3px !important;
+        }
+
+        /* 2. Flat Surfaces: No Glassmorphism, No Glows, No Shadows */
+        html[data-theme="minimal"] body {
+            background-color: #0d1117 !important;
+            background-image: none !important;
+            color: #c9d1d9 !important;
+        }
+
+        html[data-theme="minimal"] * {
+            box-shadow: none !important;
+            text-shadow: none !important;
+        }
+
+        html[data-theme="minimal"] .glass-panel {
+            background-color: #161b22 !important;
+            border: 1px solid #30363d !important;
+            backdrop-filter: none !important;
+            -webkit-backdrop-filter: none !important;
+        }
+
+        html[data-theme="minimal"] .cyber-card {
+            background-color: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            transform: none !important;
+        }
+
+        html[data-theme="minimal"] .cyber-card:hover {
+            border-color: #58a6ff !important;
+            transform: none !important;
+        }
+
+        /* 3. Strip Sci-Fi Animations & Rotating Radar */
+        html[data-theme="minimal"] .radar-sweep,
+        html[data-theme="minimal"] .radar-ping,
+        html[data-theme="minimal"] .radar-ring,
+        html[data-theme="minimal"] .animate-ping,
+        html[data-theme="minimal"] .cyber-pulse-green {
+            display: none !important;
+            animation: none !important;
+        }
+
+        html[data-theme="minimal"] .radar-box {
+            width: 60px !important;
+            height: 60px !important;
+            border-radius: 6px !important;
+            background: #21262d !important;
+            border: 1px solid #30363d !important;
+            box-shadow: none !important;
+        }
+
+        html[data-theme="minimal"] .radar-box::after {
+            content: "\f3ed";
+            font-family: "Font Awesome 6 Free";
+            font-weight: 900;
+            font-size: 24px;
+            color: #8b949e;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        html[data-theme="minimal"] .radar-box > * {
+            display: none !important;
+        }
+
+        /* 4. Controls, Inputs, and Primary Button */
+        html[data-theme="minimal"] .btn-primary {
+            background: #238636 !important;
+            color: #ffffff !important;
+            border: 1px solid rgba(240, 246, 252, 0.1) !important;
+            box-shadow: none !important;
+            font-weight: 600 !important;
+        }
+
+        html[data-theme="minimal"] .btn-primary:hover {
+            background: #2ea043 !important;
+            transform: none !important;
+        }
+
+        html[data-theme="minimal"] input[type="text"],
+        html[data-theme="minimal"] select,
+        html[data-theme="minimal"] textarea {
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            color: #f0f6fc !important;
+        }
+
+        html[data-theme="minimal"] input[type="text"]:focus {
+            border-color: #58a6ff !important;
+            outline: none !important;
+        }
+
+        /* 5. Navigation & Tabs */
+        html[data-theme="minimal"] .nav-tab-btn {
+            border-radius: 4px !important;
+            border: 1px solid transparent !important;
+            color: #8b949e !important;
+        }
+
+        html[data-theme="minimal"] .nav-tab-btn.active {
+            background: #21262d !important;
+            border-color: #30363d !important;
+            color: #f0f6fc !important;
+            box-shadow: none !important;
+        }
+
+        html[data-theme="minimal"] .result-tab {
+            border-radius: 0 !important;
+            border-bottom: 2px solid transparent !important;
+            background: transparent !important;
+            color: #8b949e !important;
+        }
+
+        html[data-theme="minimal"] .result-tab:hover {
+            color: #f0f6fc !important;
+        }
+
+        html[data-theme="minimal"] .result-tab.active {
+            color: #58a6ff !important;
+            border-bottom-color: #58a6ff !important;
+            background: transparent !important;
+        }
+
+        html[data-theme="minimal"] .result-tab .tab-count {
+            background: #21262d !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+            border-radius: 10px !important;
+        }
+
+        /* 6. Legal Banner in Minimal */
+        html[data-theme="minimal"] .compliance-banner {
+            background: #161b22 !important;
+            border: 1px solid #30363d !important;
+            border-left: 3px solid #d29922 !important;
+        }
+
+        html[data-theme="minimal"][dir="rtl"] .compliance-banner {
+            border-left: 1px solid #30363d !important;
+            border-right: 3px solid #d29922 !important;
+        }
+
+        /* 7. Typography in Minimal */
+        html[data-theme="minimal"] .cyber-heading {
+            font-family: inherit !important;
+            letter-spacing: normal !important;
+        }
+
+        html[data-theme="minimal"] h1 span.text-cyan-400 {
+            color: #f0f6fc !important;
+        }
+
+        /* 8. De-rainbow Backgrounds and Borders */
+        html[data-theme="minimal"] .bg-cyan-950\/70,
+        html[data-theme="minimal"] .bg-cyan-500\/20,
+        html[data-theme="minimal"] .bg-cyan-950,
+        html[data-theme="minimal"] .bg-cyan-900\/80,
+        html[data-theme="minimal"] .bg-purple-500\/20,
+        html[data-theme="minimal"] .bg-purple-950,
+        html[data-theme="minimal"] .bg-purple-500\/10 {
+            background-color: #21262d !important;
+        }
+
+        html[data-theme="minimal"] .text-cyan-300,
+        html[data-theme="minimal"] .text-cyan-400,
+        html[data-theme="minimal"] .text-purple-300,
+        html[data-theme="minimal"] .text-purple-400,
+        html[data-theme="minimal"] .text-teal-400 {
+            color: #c9d1d9 !important;
+        }
+
+        html[data-theme="minimal"] .border-cyan-400\/40,
+        html[data-theme="minimal"] .border-cyan-500\/40,
+        html[data-theme="minimal"] .border-cyan-500\/30,
+        html[data-theme="minimal"] .border-purple-500\/40,
+        html[data-theme="minimal"] .border-purple-400\/30 {
+            border-color: #30363d !important;
+        }
+
+        html[data-theme="minimal"] .bg-slate-950,
+        html[data-theme="minimal"] .bg-slate-950\/70,
+        html[data-theme="minimal"] .bg-slate-900,
+        html[data-theme="minimal"] .bg-slate-900\/60,
+        html[data-theme="minimal"] .bg-slate-900\/70 {
+            background-color: #0d1117 !important;
+        }
+
+        html[data-theme="minimal"] .border-slate-800,
+        html[data-theme="minimal"] .border-slate-800\/80,
+        html[data-theme="minimal"] .border-slate-800\/90,
+        html[data-theme="minimal"] .border-slate-700 {
+            border-color: #30363d !important;
+        }
+
+        /* 9. Standby Feature Boxes */
+        html[data-theme="minimal"] #welcome-msg .grid > div {
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+            border-radius: 4px !important;
+        }
+
+        html[data-theme="minimal"] #welcome-msg .grid i {
+            color: #8b949e !important;
+        }
+
+        /* 10. Discovered Users in Minimal */
+        html[data-theme="minimal"] #panel-stack .p-3 {
+            border-radius: 4px !important;
+            background: #0d1117 !important;
+            border: 1px solid #30363d !important;
+        }
+
+        html[data-theme="minimal"] #panel-stack img {
+            border-radius: 4px !important;
+            border-color: #30363d !important;
+        }
+
+        /* 11. Chips in Minimal */
+        html[data-theme="minimal"] .chip,
+        html[data-theme="minimal"] .theme-chip {
+            background: #21262d !important;
+            border: 1px solid #30363d !important;
+            color: #c9d1d9 !important;
+            font-weight: 500 !important;
         }
     </style>
 </head>
@@ -512,12 +927,42 @@
                     </div>
                 </div>
 
-                <!-- Language Switcher & Mobile Dot -->
+                <!-- Theme Switcher & Language Switcher -->
                 <div class="flex items-center gap-2">
-                    <button onclick="toggleLanguage()" id="langToggleBtn"
-                        class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-cyan-400 text-xs font-mono font-bold text-cyan-300 transition flex items-center gap-1.5"
+                    <!-- Theme Dropdown -->
+                    <div class="relative" id="themeMenuContainer">
+                        <button onclick="toggleThemeMenu()" id="themeToggleBtn" type="button"
+                            class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 text-xs font-medium text-slate-200 transition flex items-center gap-1.5 shadow-sm"
+                            title="Switch Theme / انتخاب پوسته">
+                            <i class="fas fa-palette text-xs text-slate-400"></i>
+                            <span id="currentThemeLabel">Minimal Slate</span>
+                            <i class="fas fa-chevron-down text-[9px] text-slate-400"></i>
+                        </button>
+                        <div id="themeDropdown" class="hidden absolute right-0 rtl:right-auto rtl:left-0 top-full mt-1.5 w-48 rounded-xl border border-slate-700 bg-slate-950 shadow-2xl z-40 overflow-hidden backdrop-blur-xl p-1.5 space-y-0.5">
+                            <button type="button" onclick="setTheme('minimal')" class="theme-opt-btn w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg text-xs hover:bg-slate-800 transition flex items-center justify-between text-slate-200">
+                                <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-slate-400 border border-slate-300"></span> <span data-i18n="themeMinimal">Minimal Slate</span></span>
+                                <i class="fas fa-check text-[10px] text-sky-400 hidden" id="check-minimal"></i>
+                            </button>
+                            <button type="button" onclick="setTheme('cyber')" class="theme-opt-btn w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg text-xs hover:bg-slate-800 transition flex items-center justify-between text-slate-200">
+                                <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 border border-cyan-300"></span> <span data-i18n="themeCyber">Cyber Cyan</span></span>
+                                <i class="fas fa-check text-[10px] text-cyan-400 hidden" id="check-cyber"></i>
+                            </button>
+                            <button type="button" onclick="setTheme('navy')" class="theme-opt-btn w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg text-xs hover:bg-slate-800 transition flex items-center justify-between text-slate-200">
+                                <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-blue-500 border border-blue-400"></span> <span data-i18n="themeNavy">Midnight Navy</span></span>
+                                <i class="fas fa-check text-[10px] text-blue-400 hidden" id="check-navy"></i>
+                            </button>
+                            <button type="button" onclick="setTheme('matrix')" class="theme-opt-btn w-full text-left rtl:text-right px-2.5 py-1.5 rounded-lg text-xs hover:bg-slate-800 transition flex items-center justify-between text-slate-200">
+                                <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-emerald-400 border border-emerald-300"></span> <span data-i18n="themeMatrix">Terminal Green</span></span>
+                                <i class="fas fa-check text-[10px] text-emerald-400 hidden" id="check-matrix"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Language Switcher Button -->
+                    <button onclick="toggleLanguage()" id="langToggleBtn" type="button"
+                        class="px-2.5 py-1 rounded-lg bg-slate-900 border border-slate-700 hover:border-slate-500 text-xs font-mono font-bold text-slate-200 transition flex items-center gap-1.5 shadow-sm"
                         title="Switch Language / تغییر زبان">
-                        <i class="fas fa-globe text-[11px]"></i>
+                        <i class="fas fa-globe text-[11px] text-slate-400"></i>
                         <span id="langLabel">FA / فارسی</span>
                     </button>
                     <div class="flex md:hidden items-center gap-1.5 text-xs font-mono px-2 py-1 rounded-lg bg-slate-900 border border-slate-700">
@@ -613,8 +1058,8 @@
 
                             <!-- Primary Action Button -->
                             <button onclick="startAudit()" id="scanBtn"
-                                class="w-full relative overflow-hidden group bg-gradient-to-r from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-400 hover:via-blue-500 hover:to-indigo-500 text-white font-bold py-3 px-5 rounded-xl transition duration-200 shadow-md shadow-cyan-500/25 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                                <i class="fas fa-bolt text-cyan-100 text-sm group-hover:scale-110 transition-transform"></i>
+                                class="btn-primary w-full relative overflow-hidden group font-bold py-3 px-5 rounded-xl transition duration-200 disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                                <i class="fas fa-bolt text-sm group-hover:scale-110 transition-transform"></i>
                                 <span class="cyber-heading tracking-wider uppercase text-xs sm:text-sm font-extrabold" data-i18n="executeAudit">Execute Audit</span>
                             </button>
                         </div>
@@ -730,15 +1175,15 @@
                             <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
                                 <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-center cyber-card">
                                     <p class="text-xs text-slate-400 uppercase font-mono font-bold tracking-wider" data-i18n="statVersion">WP Version</p>
-                                    <p id="statVersion" class="text-base sm:text-lg font-bold mono text-cyan-300 mt-1">--</p>
+                                    <p id="statVersion" class="text-base sm:text-lg font-bold mono mt-1" style="color: var(--hud-val-color)">--</p>
                                 </div>
                                 <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-center cyber-card">
                                     <p class="text-xs text-slate-400 uppercase font-mono font-bold tracking-wider" data-i18n="statUsers">Discovered Users</p>
-                                    <p id="statUsers" class="text-base sm:text-lg font-bold mono text-purple-300 mt-1">0</p>
+                                    <p id="statUsers" class="text-base sm:text-lg font-bold mono mt-1" style="color: var(--hud-val-color)">0</p>
                                 </div>
                                 <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-center cyber-card">
                                     <p class="text-xs text-slate-400 uppercase font-mono font-bold tracking-wider" data-i18n="statComponents">Components</p>
-                                    <p id="statPlugins" class="text-base sm:text-lg font-bold mono text-amber-300 mt-1">0</p>
+                                    <p id="statPlugins" class="text-base sm:text-lg font-bold mono mt-1" style="color: var(--hud-val-color)">0</p>
                                 </div>
                                 <div class="bg-slate-950/70 border border-slate-800 rounded-xl p-3 text-center cyber-card">
                                     <p class="text-xs text-slate-400 uppercase font-mono font-bold tracking-wider" data-i18n="statThreats">Threat Score</p>
@@ -1320,6 +1765,11 @@
                 statComponents: "Components",
                 statThreats: "Threat Score",
                 exportJson: "Export JSON",
+                themeBtn: "Theme",
+                themeMinimal: "Minimal Slate",
+                themeCyber: "Cyber Cyan",
+                themeNavy: "Midnight Navy",
+                themeMatrix: "Terminal Green",
                 tabFindings: "Findings",
                 tabStack: "Attack Surface",
                 tabIntel: "OSINT Intel",
@@ -1449,6 +1899,11 @@
                 statComponents: "ماژول‌ها و قالب‌ها",
                 statThreats: "آسیب‌پذیری‌ها",
                 exportJson: "خروجی JSON",
+                themeBtn: "پوسته",
+                themeMinimal: "مینیمال ساده",
+                themeCyber: "سایبر تیره",
+                themeNavy: "سازمانی سرمه‌ای",
+                themeMatrix: "ترمینال سبز",
                 tabFindings: "یافته‌های امنیتی",
                 tabStack: "سطح دسترسی و زیرساخت",
                 tabIntel: "اطلاعات عمومی (OSINT)",
@@ -1583,6 +2038,7 @@
             if (historyCache && historyCache.length) {
                 renderHistoryTable();
             }
+            updateThemeLabel();
         }
 
         function toggleLanguage() {
@@ -1603,6 +2059,52 @@
                 applyLanguage(saved);
             }
         }
+
+        // ── Theme Management ───────────────────────────────────────
+        let currentTheme = localStorage.getItem('wp_guard_theme') || 'minimal';
+
+        function updateThemeLabel() {
+            const labelEl = document.getElementById('currentThemeLabel');
+            if (!labelEl) return;
+            const names = {
+                minimal: t('themeMinimal') || 'Minimal Slate',
+                cyber: t('themeCyber') || 'Cyber Cyan',
+                navy: t('themeNavy') || 'Midnight Navy',
+                matrix: t('themeMatrix') || 'Terminal Green'
+            };
+            labelEl.textContent = names[currentTheme] || currentTheme;
+        }
+
+        function setTheme(theme) {
+            currentTheme = theme;
+            localStorage.setItem('wp_guard_theme', theme);
+            document.documentElement.setAttribute('data-theme', theme);
+            
+            updateThemeLabel();
+
+            ['minimal', 'cyber', 'navy', 'matrix'].forEach(tKey => {
+                const check = document.getElementById(`check-${tKey}`);
+                if (check) check.classList.toggle('hidden', tKey !== theme);
+            });
+
+            closeThemeMenu();
+        }
+
+        function toggleThemeMenu() {
+            const menu = document.getElementById('themeDropdown');
+            if (menu) menu.classList.toggle('hidden');
+        }
+
+        function closeThemeMenu() {
+            const menu = document.getElementById('themeDropdown');
+            if (menu) menu.classList.add('hidden');
+        }
+
+        document.addEventListener('click', (e) => {
+            const container = document.getElementById('themeMenuContainer');
+            if (!container || container.contains(e.target)) return;
+            closeThemeMenu();
+        });
 
         // ── App Core State ─────────────────────────────────────────
         const socket = io({
@@ -1784,6 +2286,7 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             checkFirstVisitLanguage();
+            setTheme(currentTheme);
 
             const authConfirm = document.getElementById('authConfirm');
             const scanBtn = document.getElementById('scanBtn');
@@ -1859,18 +2362,16 @@
             const latest = item.latest_version;
             const vulns = item.known_vulnerabilities || [];
             let badge = '';
-            let chipClass = kind === 'plugin'
-                ? 'bg-blue-500/20 text-blue-200 border-blue-400/40'
-                : 'bg-amber-500/20 text-amber-200 border-amber-400/40';
+            let chipClass = 'theme-chip';
 
             if (item.vulnerable && vulns.length) {
-                chipClass = 'bg-rose-500/25 text-rose-200 border-rose-400/60 font-bold';
+                chipClass = 'chip bg-rose-500/20 text-rose-200 border border-rose-400/50 font-bold';
                 const dynCount = (item.dynamic_verified || []).length;
                 badge = dynCount
                     ? ` <span class="text-amber-300 font-bold">⚡ ${dynCount} LIVE</span>`
                     : ` <span class="text-rose-300 font-bold">⚠ ${vulns.length} CVE</span>`;
             } else if (item.outdated) {
-                chipClass = 'bg-amber-500/25 text-amber-100 border-amber-400/50 font-bold';
+                chipClass = 'chip bg-amber-500/15 text-amber-200 border border-amber-400/40 font-bold';
                 badge = latest ? ` <span class="text-amber-300 font-bold">↑ v${esc(latest)}</span>` : '';
             }
 
@@ -1878,8 +2379,9 @@
             if (latest) titleParts.push(`latest: v${latest}`);
             vulns.slice(0, 3).forEach(v => titleParts.push(`[${v.severity}] ${v.title}`));
 
-            return `<span class="chip ${chipClass}" title="${esc(titleParts.join(' | '))}">
-                ${esc(slug)} <span class="text-slate-300">v${esc(version)}</span>${badge}
+            return `<span class="${chipClass}" title="${esc(titleParts.join(' | '))}">
+                <i class="fas ${kind === 'plugin' ? 'fa-puzzle-piece' : 'fa-palette'} text-[11px]"></i>
+                ${esc(slug)} <span class="opacity-75">v${esc(version)}</span>${badge}
             </span>`;
         }
 
@@ -1909,16 +2411,16 @@
             const cdn = stack.cdn || {};
             const stackItems = [];
             if (data.version && data.version !== 'Unknown') {
-                stackItems.push(`<span class="chip bg-blue-500/15 text-blue-200 border-blue-400/40 font-bold"><i class="fab fa-wordpress text-blue-400"></i>WordPress ${esc(data.version)}</span>`);
+                stackItems.push(`<span class="theme-chip"><i class="fab fa-wordpress text-xs"></i>WordPress ${esc(data.version)}</span>`);
             }
             if (stack.php_version) {
-                stackItems.push(`<span class="chip bg-emerald-500/15 text-emerald-200 border-emerald-400/40 font-bold"><i class="fab fa-php text-emerald-400"></i>PHP ${esc(stack.php_version)}</span>`);
+                stackItems.push(`<span class="theme-chip"><i class="fab fa-php text-xs"></i>PHP ${esc(stack.php_version)}</span>`);
             }
             if (stack.web_server) {
-                stackItems.push(`<span class="chip bg-cyan-500/15 text-cyan-200 border-cyan-400/40 font-bold"><i class="fas fa-server text-cyan-400"></i>${esc(stack.web_server)}</span>`);
+                stackItems.push(`<span class="theme-chip"><i class="fas fa-server text-xs"></i>${esc(stack.web_server)}</span>`);
             }
             if (cdn.detected) {
-                stackItems.push(`<span class="chip bg-amber-500/15 text-amber-100 border-amber-400/40 font-bold"><i class="fas fa-cloud text-amber-400"></i>CDN: ${esc(cdn.provider || 'Detected')}</span>`);
+                stackItems.push(`<span class="theme-chip"><i class="fas fa-cloud text-xs"></i>CDN: ${esc(cdn.provider || 'Detected')}</span>`);
             }
             const stackEl = document.getElementById('stackInfo');
             if (stackEl) {
@@ -2472,8 +2974,8 @@
 
             if (hasRichData) {
                 const avatar = user.avatar
-                    ? `<img src="${esc(user.avatar)}" alt="" class="w-10 h-10 rounded-full border border-purple-400/40 shrink-0 object-cover" loading="lazy">`
-                    : `<div class="w-10 h-10 rounded-full bg-purple-500/20 border border-purple-400/30 flex items-center justify-center shrink-0 text-purple-300"><i class="fas fa-user text-xs"></i></div>`;
+                    ? `<img src="${esc(user.avatar)}" alt="" class="w-10 h-10 rounded-full border border-slate-700 shrink-0 object-cover" loading="lazy">`
+                    : `<div class="w-10 h-10 rounded-full bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-slate-300"><i class="fas fa-user text-xs"></i></div>`;
                 const nameLine = user.name
                     ? `<p class="text-xs font-bold text-white truncate">${esc(user.name)}</p>`
                     : '';
@@ -2481,20 +2983,20 @@
                     ? `<p class="text-[11px] text-slate-300 line-clamp-2 leading-relaxed font-normal mt-1">${esc(user.description)}</p>`
                     : '';
                 const profile = user.profile_url
-                    ? `<a href="${esc(user.profile_url)}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-purple-300 hover:text-white inline-flex items-center gap-1 font-mono font-medium"><i class="fas fa-external-link-alt text-[9px]"></i> Profile</a>`
+                    ? `<a href="${esc(user.profile_url)}" target="_blank" rel="noopener noreferrer" class="text-[11px] text-slate-400 hover:text-white inline-flex items-center gap-1 font-mono font-medium"><i class="fas fa-external-link-alt text-[9px]"></i> Profile</a>`
                     : '';
                 const idLine = user.id != null
                     ? `<span class="text-[10px] text-slate-400 font-mono">ID: ${esc(String(user.id))}</span>`
                     : '';
 
                 return `
-                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-purple-500/40 transition flex flex-col justify-between gap-2 shadow-sm">
+                    <div class="p-3 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-slate-700 transition flex flex-col justify-between gap-2 shadow-sm">
                         <div class="flex items-start gap-2.5">
                             ${avatar}
                             <div class="min-w-0 flex-1">
                                 <div class="flex items-center justify-between gap-1 flex-wrap">
-                                    <span class="text-xs font-mono text-purple-200 font-bold">@${esc(username)}</span>
-                                    <span class="text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-200 border border-purple-500/30">REST</span>
+                                    <span class="text-xs font-mono text-white font-bold">@${esc(username)}</span>
+                                    <span class="text-[10px] font-mono font-bold uppercase px-1.5 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">REST</span>
                                 </div>
                                 ${nameLine}
                                 ${idLine}
@@ -2511,9 +3013,9 @@
                 oembed: 'oEmbed',
             }[user.source] || '';
             const badge = sourceLabel
-                ? `<span class="text-[10px] text-slate-300 ml-0.5">(${esc(sourceLabel)})</span>`
+                ? `<span class="text-[10px] text-slate-400 font-mono ml-0.5">(${esc(sourceLabel)})</span>`
                 : '';
-            return `<span class="chip bg-purple-500/20 text-purple-200 border-purple-400/40 text-xs">@${esc(username)}${badge}</span>`;
+            return `<span class="theme-chip">@${esc(username)}${badge}</span>`;
         }
 
         function renderSimpleUserChip(u) {
@@ -2525,9 +3027,9 @@
                 oembed: 'oEmbed',
             }[user.source] || '';
             const badge = sourceLabel
-                ? `<span class="text-[10px] text-slate-300 ml-0.5">(${esc(sourceLabel)})</span>`
+                ? `<span class="text-[10px] text-slate-400 font-mono ml-0.5">(${esc(sourceLabel)})</span>`
                 : '';
-            return `<span class="chip bg-purple-500/20 text-purple-200 border-purple-400/40 text-xs">@${esc(username)}${badge}</span>`;
+            return `<span class="theme-chip">@${esc(username)}${badge}</span>`;
         }
 
         function renderSeverityBar(counts) {
